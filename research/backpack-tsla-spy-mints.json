@@ -1,0 +1,184 @@
+{
+    "jsonrpc":  "2.0",
+    "result":  {
+                   "context":  {
+                                   "apiVersion":  "4.3.0-rc.0",
+                                   "slot":  447247289
+                               },
+                   "value":  [
+                                 {
+                                     "data":  {
+                                                  "parsed":  {
+                                                                 "info":  {
+                                                                              "decimals":  6,
+                                                                              "extensions":  [
+                                                                                                 {
+                                                                                                     "extension":  "metadataPointer",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "metadataAddress":  "TSLAqBbv4CNCnzWFeB7LmydAyEiNMJtve7DYKLpdK4S"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "permanentDelegate",
+                                                                                                     "state":  {
+                                                                                                                   "delegate":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "defaultAccountState",
+                                                                                                     "state":  {
+                                                                                                                   "accountState":  "initialized"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "pausableConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "paused":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "confidentialTransferMint",
+                                                                                                     "state":  {
+                                                                                                                   "auditorElgamalPubkey":  null,
+                                                                                                                   "authority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "autoApproveNewAccounts":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "transferHook",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "programId":  null
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "scaledUiAmountConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "4HAAPwMQuawnhU2dDRQD9UXLKBEebd4riv5ATUZUcRTa",
+                                                                                                                   "multiplier":  "1",
+                                                                                                                   "newMultiplier":  "1",
+                                                                                                                   "newMultiplierEffectiveTimestamp":  0
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "tokenMetadata",
+                                                                                                     "state":  {
+                                                                                                                   "additionalMetadata":  [
+
+                                                                                                                                          ],
+                                                                                                                   "mint":  "TSLAqBbv4CNCnzWFeB7LmydAyEiNMJtve7DYKLpdK4S",
+                                                                                                                   "name":  "Tesla - Backpack Securities",
+                                                                                                                   "symbol":  "TSLA",
+                                                                                                                   "updateAuthority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "uri":  "https://trek-labs.github.io/heart-metadata/stocks/tsla.us.json"
+                                                                                                               }
+                                                                                                 }
+                                                                                             ],
+                                                                              "freezeAuthority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                              "isInitialized":  true,
+                                                                              "mintAuthority":  "4HAAPwMQuawnhU2dDRQD9UXLKBEebd4riv5ATUZUcRTa",
+                                                                              "supply":  "0"
+                                                                          },
+                                                                 "type":  "mint"
+                                                             },
+                                                  "program":  "spl-token-2022",
+                                                  "space":  686
+                                              },
+                                     "executable":  false,
+                                     "lamports":  5721120,
+                                     "owner":  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                                     "rentEpoch":  18446744073709551615,
+                                     "space":  686
+                                 },
+                                 {
+                                     "data":  {
+                                                  "parsed":  {
+                                                                 "info":  {
+                                                                              "decimals":  6,
+                                                                              "extensions":  [
+                                                                                                 {
+                                                                                                     "extension":  "metadataPointer",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "metadataAddress":  "SPYBo66VJPFjh1pXMb9Le53kDYWTK1zzYVDeVRWtsbi"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "permanentDelegate",
+                                                                                                     "state":  {
+                                                                                                                   "delegate":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "defaultAccountState",
+                                                                                                     "state":  {
+                                                                                                                   "accountState":  "initialized"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "pausableConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "paused":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "confidentialTransferMint",
+                                                                                                     "state":  {
+                                                                                                                   "auditorElgamalPubkey":  null,
+                                                                                                                   "authority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "autoApproveNewAccounts":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "transferHook",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "programId":  null
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "scaledUiAmountConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "DRABw25HE4p2RQSG9QPEUGjRCfSR7NsnDgH7ZWhuruU5",
+                                                                                                                   "multiplier":  "1",
+                                                                                                                   "newMultiplier":  "1",
+                                                                                                                   "newMultiplierEffectiveTimestamp":  0
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "tokenMetadata",
+                                                                                                     "state":  {
+                                                                                                                   "additionalMetadata":  [
+
+                                                                                                                                          ],
+                                                                                                                   "mint":  "SPYBo66VJPFjh1pXMb9Le53kDYWTK1zzYVDeVRWtsbi",
+                                                                                                                   "name":  "State Street SPDR S\u0026P 500 ETF Trust - Backpack Securities",
+                                                                                                                   "symbol":  "SPY",
+                                                                                                                   "updateAuthority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                                                                   "uri":  "https://trek-labs.github.io/heart-metadata/stocks/spy.us.json"
+                                                                                                               }
+                                                                                                 }
+                                                                                             ],
+                                                                              "freezeAuthority":  "2cVYpagTt7ZGc3mmTXBa7fAznUtx5DUu6aCq8uVDaf4a",
+                                                                              "isInitialized":  true,
+                                                                              "mintAuthority":  "DRABw25HE4p2RQSG9QPEUGjRCfSR7NsnDgH7ZWhuruU5",
+                                                                              "supply":  "0"
+                                                                          },
+                                                                 "type":  "mint"
+                                                             },
+                                                  "program":  "spl-token-2022",
+                                                  "space":  714
+                                              },
+                                     "executable":  false,
+                                     "lamports":  5916000,
+                                     "owner":  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                                     "rentEpoch":  18446744073709551615,
+                                     "space":  714
+                                 }
+                             ]
+               },
+    "id":  1
+}

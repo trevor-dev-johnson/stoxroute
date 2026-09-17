@@ -1,0 +1,18 @@
+[
+    {
+        "Symbol":  "NVDAx",
+        "Mint":  "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+        "Decimals":  8,
+        "Multiplier":  "1.001701196801074",
+        "NextMultiplier":  "1.001701196801074",
+        "EffectiveTimestamp":  1789000200
+    },
+    {
+        "Symbol":  "NVDAon",
+        "Mint":  "gEGtLTPNQ7jcg25zTetkbmF7teoDLcrfTnQfmn2ondo",
+        "Decimals":  9,
+        "Multiplier":  "1.0017152487959897",
+        "NextMultiplier":  "1.0017152487959897",
+        "EffectiveTimestamp":  1788998645
+    }
+]

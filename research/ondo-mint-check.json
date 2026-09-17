@@ -1,0 +1,252 @@
+{
+    "jsonrpc":  "2.0",
+    "result":  {
+                   "context":  {
+                                   "apiVersion":  "4.3.0-rc.0",
+                                   "slot":  447247862
+                               },
+                   "value":  [
+                                 {
+                                     "data":  {
+                                                  "parsed":  {
+                                                                 "info":  {
+                                                                              "decimals":  9,
+                                                                              "extensions":  [
+                                                                                                 {
+                                                                                                     "extension":  "scaledUiAmountConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "multiplier":  "1.0017152487959897",
+                                                                                                                   "newMultiplier":  "1.0017152487959897",
+                                                                                                                   "newMultiplierEffectiveTimestamp":  1788998645
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "metadataPointer",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "metadataAddress":  "gEGtLTPNQ7jcg25zTetkbmF7teoDLcrfTnQfmn2ondo"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "pausableConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "paused":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "defaultAccountState",
+                                                                                                     "state":  {
+                                                                                                                   "accountState":  "initialized"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "confidentialTransferMint",
+                                                                                                     "state":  {
+                                                                                                                   "auditorElgamalPubkey":  null,
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "autoApproveNewAccounts":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "transferHook",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "programId":  null
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "tokenMetadata",
+                                                                                                     "state":  {
+                                                                                                                   "additionalMetadata":  [
+
+                                                                                                                                          ],
+                                                                                                                   "mint":  "gEGtLTPNQ7jcg25zTetkbmF7teoDLcrfTnQfmn2ondo",
+                                                                                                                   "name":  "NVIDIA (Ondo Tokenized)",
+                                                                                                                   "symbol":  "NVDAon",
+                                                                                                                   "updateAuthority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "uri":  "https://app.ondo.finance/api/v2/assets/NVDAon/sol_metadata.json"
+                                                                                                               }
+                                                                                                 }
+                                                                                             ],
+                                                                              "freezeAuthority":  "51QVCuHfL1FeNjd8BDeffCKhCcAYoULnVB3yjNhShiuK",
+                                                                              "isInitialized":  true,
+                                                                              "mintAuthority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                              "supply":  "16673739661687"
+                                                                          },
+                                                                 "type":  "mint"
+                                                             },
+                                                  "program":  "spl-token-2022",
+                                                  "space":  649
+                                              },
+                                     "executable":  false,
+                                     "lamports":  5407920,
+                                     "owner":  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                                     "rentEpoch":  18446744073709551615,
+                                     "space":  649
+                                 },
+                                 {
+                                     "data":  {
+                                                  "parsed":  {
+                                                                 "info":  {
+                                                                              "decimals":  9,
+                                                                              "extensions":  [
+                                                                                                 {
+                                                                                                     "extension":  "scaledUiAmountConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "multiplier":  "1",
+                                                                                                                   "newMultiplier":  "1",
+                                                                                                                   "newMultiplierEffectiveTimestamp":  1788344044
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "metadataPointer",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "metadataAddress":  "KeGv7bsfR4MheC1CkmnAVceoApjrkvBhHYjWb67ondo"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "pausableConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "paused":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "defaultAccountState",
+                                                                                                     "state":  {
+                                                                                                                   "accountState":  "initialized"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "confidentialTransferMint",
+                                                                                                     "state":  {
+                                                                                                                   "auditorElgamalPubkey":  null,
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "autoApproveNewAccounts":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "transferHook",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "programId":  null
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "tokenMetadata",
+                                                                                                     "state":  {
+                                                                                                                   "additionalMetadata":  [
+
+                                                                                                                                          ],
+                                                                                                                   "mint":  "KeGv7bsfR4MheC1CkmnAVceoApjrkvBhHYjWb67ondo",
+                                                                                                                   "name":  "Tesla (Ondo Tokenized)",
+                                                                                                                   "symbol":  "TSLAon",
+                                                                                                                   "updateAuthority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "uri":  "https://app.ondo.finance/api/v2/assets/TSLAon/sol_metadata.json"
+                                                                                                               }
+                                                                                                 }
+                                                                                             ],
+                                                                              "freezeAuthority":  "51QVCuHfL1FeNjd8BDeffCKhCcAYoULnVB3yjNhShiuK",
+                                                                              "isInitialized":  true,
+                                                                              "mintAuthority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                              "supply":  "408165388466"
+                                                                          },
+                                                                 "type":  "mint"
+                                                             },
+                                                  "program":  "spl-token-2022",
+                                                  "space":  648
+                                              },
+                                     "executable":  false,
+                                     "lamports":  5400960,
+                                     "owner":  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                                     "rentEpoch":  18446744073709551615,
+                                     "space":  648
+                                 },
+                                 {
+                                     "data":  {
+                                                  "parsed":  {
+                                                                 "info":  {
+                                                                              "decimals":  9,
+                                                                              "extensions":  [
+                                                                                                 {
+                                                                                                     "extension":  "scaledUiAmountConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "multiplier":  "1.0077209101501272",
+                                                                                                                   "newMultiplier":  "1.0077209101501272",
+                                                                                                                   "newMultiplierEffectiveTimestamp":  1788344044
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "metadataPointer",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "metadataAddress":  "k18WJUULWheRkSpSquYGdNNmtuE2Vbw1hpuUi92ondo"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "pausableConfig",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "paused":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "defaultAccountState",
+                                                                                                     "state":  {
+                                                                                                                   "accountState":  "initialized"
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "confidentialTransferMint",
+                                                                                                     "state":  {
+                                                                                                                   "auditorElgamalPubkey":  null,
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "autoApproveNewAccounts":  false
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "transferHook",
+                                                                                                     "state":  {
+                                                                                                                   "authority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "programId":  null
+                                                                                                               }
+                                                                                                 },
+                                                                                                 {
+                                                                                                     "extension":  "tokenMetadata",
+                                                                                                     "state":  {
+                                                                                                                   "additionalMetadata":  [
+
+                                                                                                                                          ],
+                                                                                                                   "mint":  "k18WJUULWheRkSpSquYGdNNmtuE2Vbw1hpuUi92ondo",
+                                                                                                                   "name":  "SPDR S\u0026P 500 ETF (Ondo Tokenized)",
+                                                                                                                   "symbol":  "SPYon",
+                                                                                                                   "updateAuthority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                                                                   "uri":  "https://app.ondo.finance/api/v2/assets/SPYon/sol_metadata.json"
+                                                                                                               }
+                                                                                                 }
+                                                                                             ],
+                                                                              "freezeAuthority":  "51QVCuHfL1FeNjd8BDeffCKhCcAYoULnVB3yjNhShiuK",
+                                                                              "isInitialized":  true,
+                                                                              "mintAuthority":  "9foMHsSDq7nMg4WPusSz9eY7tyxyukqborA8GyU5cUxD",
+                                                                              "supply":  "1504400878992"
+                                                                          },
+                                                                 "type":  "mint"
+                                                             },
+                                                  "program":  "spl-token-2022",
+                                                  "space":  657
+                                              },
+                                     "executable":  false,
+                                     "lamports":  5463600,
+                                     "owner":  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+                                     "rentEpoch":  18446744073709551615,
+                                     "space":  657
+                                 }
+                             ]
+               },
+    "id":  1
+}

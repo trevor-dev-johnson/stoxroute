@@ -1,0 +1,51 @@
+{
+    "swapType":  "aggregator",
+    "inAmount":  "100000000",
+    "outAmount":  "46912502",
+    "otherAmountThreshold":  "46912502",
+    "swapMode":  "ExactIn",
+    "slippageBps":  0,
+    "priceImpactPct":  "-0.0024515707836092796",
+    "routePlan":  [
+                      {
+                          "percent":  100,
+                          "bps":  10000,
+                          "usdValue":  99.98158941051913,
+                          "swapInfo":  {
+                                           "ammKey":  "6R4r93V5fcMzc13CL2enEepDSYcr4Qx3ptZBDwudTXCo",
+                                           "label":  "Whirlpool",
+                                           "inputMint":  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                                           "outputMint":  "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+                                           "inAmount":  "100000000",
+                                           "outAmount":  "46959461"
+                                       }
+                      }
+                  ],
+    "feeMint":  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "feeBps":  10,
+    "platformFee":  {
+                        "feeBps":  10,
+                        "feeMint":  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+                    },
+    "signatureFeeLamports":  0,
+    "signatureFeePayer":  null,
+    "prioritizationFeeLamports":  0,
+    "prioritizationFeePayer":  null,
+    "rentFeeLamports":  0,
+    "rentFeePayer":  null,
+    "transaction":  null,
+    "gasless":  false,
+    "jitOptimized":  false,
+    "taker":  null,
+    "inputMint":  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint":  "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+    "router":  "metis",
+    "guaranteedPrice":  false,
+    "requestId":  "01a0a520-b924-7763-99e6-4f26e0bd10d6",
+    "inUsdValue":  99.98158941051913,
+    "outUsdValue":  99.73647746702149,
+    "swapUsdValue":  99.98158941051913,
+    "priceImpact":  -0.24515707836092795,
+    "mode":  "ultra",
+    "totalTime":  150
+}

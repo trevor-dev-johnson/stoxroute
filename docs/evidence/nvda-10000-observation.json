@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "provenance": "Transcribed from user-supplied PowerShell output. Quote excerpts are not full Jupiter responses; mint and multiplier inputs come from preceding RPC checks.",
+  "fixtureOnly": true,
+  "underlyingTicker": "NVDA",
+  "underlyingISIN": "US67066G1040",
+  "requestedUSDC": "10000",
+  "inputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "inputDecimals": 6,
+  "walletProvided": false,
+  "transactionBuilt": false,
+  "executionVerified": false,
+  "quotes": [
+    {
+      "symbol": "NVDAx",
+      "normalizationInputs": {
+        "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+        "decimals": 8,
+        "activeMultiplier": "1.001701196801074",
+        "multiplierCaptureTimeUTC": null
+      },
+      "startedUTC": "2026-09-15T12:54:27.0572744+00:00",
+      "finishedUTC": "2026-09-15T12:54:27.4687067+00:00",
+      "attempts": 1,
+      "quoteExcerpt": {
+        "inAmount": "10000000000",
+        "outAmount": "4686198502",
+        "otherAmountThreshold": "4686198502",
+        "swapMode": "ExactIn",
+        "slippageBps": 0,
+        "feeBps": 10,
+        "feeMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "platformFee": {
+          "feeBps": 10,
+          "feeMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        },
+        "signatureFeeLamports": 0,
+        "prioritizationFeeLamports": 0,
+        "rentFeeLamports": 0,
+        "gasless": true,
+        "router": "jupiterz",
+        "errorCode": null,
+        "errorMessage": null
+      },
+      "expectedShareEquivalentExposure": "46.94170647900800170791148",
+      "derivedRequestedUSDCPerShareEquivalent": "213.030176149900496137736871199731824595859268998090677129378"
+    },
+    {
+      "symbol": "NVDAon",
+      "normalizationInputs": {
+        "mint": "gEGtLTPNQ7jcg25zTetkbmF7teoDLcrfTnQfmn2ondo",
+        "decimals": 9,
+        "activeMultiplier": "1.0017152487959897",
+        "multiplierCaptureTimeUTC": null
+      },
+      "startedUTC": "2026-09-15T12:54:27.1013063+00:00",
+      "finishedUTC": "2026-09-15T12:54:27.6207219+00:00",
+      "attempts": 1,
+      "quoteExcerpt": {
+        "inAmount": "10000000000",
+        "outAmount": "46887391600",
+        "otherAmountThreshold": "46887391600",
+        "swapMode": "ExactIn",
+        "slippageBps": 0,
+        "feeBps": 10,
+        "feeMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "platformFee": {
+          "feeBps": 10,
+          "feeMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        },
+        "signatureFeeLamports": 0,
+        "prioritizationFeeLamports": 0,
+        "rentFeeLamports": 0,
+        "gasless": true,
+        "router": "jupiterz",
+        "errorCode": null,
+        "errorMessage": null
+      },
+      "expectedShareEquivalentExposure": "46.96781514198899757346652",
+      "derivedRequestedUSDCPerShareEquivalent": "212.911756056117858282004086759396060308496590939053104084593"
+    }
+  ],
+  "derivedComparison": {
+    "historicalWinner": "NVDAon",
+    "additionalShareEquivalentExposure": "0.02610866298099586555504",
+    "relativeExposureAdvantageBps": "5.56193307387993542880675325790044518028055828198061906730000",
+    "interpretation": "Quoted exposure only. Same fee rate reported; actual wallet costs and execution unverified."
+  }
+}

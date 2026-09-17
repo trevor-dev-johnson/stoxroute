@@ -1,0 +1,53 @@
+{
+    "inputMint":  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "outputMint":  "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+    "inAmount":  "10000000000",
+    "outAmount":  "4686198502",
+    "otherAmountThreshold":  "4686198502",
+    "swapMode":  "ExactIn",
+    "slippageBps":  0,
+    "priceImpactPct":  "-0.0035178628382246595",
+    "routePlan":  [
+                      {
+                          "percent":  100,
+                          "bps":  10000,
+                          "usdValue":  9998.079655980042,
+                          "swapInfo":  {
+                                           "ammKey":  "MfDuWeqSHEqTFVYZ7LoexgAK9dxk7cy4DFJWjWMGVWa",
+                                           "label":  "JupiterZ",
+                                           "inputMint":  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                                           "outputMint":  "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+                                           "inAmount":  "10000000000",
+                                           "outAmount":  "4686198502"
+                                       }
+                      }
+                  ],
+    "feeMint":  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "feeBps":  10,
+    "transaction":  null,
+    "gasless":  true,
+    "jitOptimized":  false,
+    "signatureFeeLamports":  0,
+    "signatureFeePayer":  null,
+    "prioritizationFeeLamports":  0,
+    "prioritizationFeePayer":  null,
+    "rentFeeLamports":  0,
+    "rentFeePayer":  null,
+    "requestId":  "01a0a522-3d16-7119-9c2e-35c6eadaed57",
+    "swapType":  "rfq",
+    "router":  "jupiterz",
+    "guaranteedPrice":  true,
+    "quoteId":  "43df5c3c-ab9b-5bd6-8050-a139516d3325",
+    "maker":  "MfDuWeqSHEqTFVYZ7LoexgAK9dxk7cy4DFJWjWMGVWa",
+    "taker":  null,
+    "platformFee":  {
+                        "feeBps":  10,
+                        "feeMint":  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+                    },
+    "inUsdValue":  9998.079655980042,
+    "outUsdValue":  9962.90778310466,
+    "swapUsdValue":  9998.079655980042,
+    "priceImpact":  -0.35178628382246596,
+    "mode":  "ultra",
+    "totalTime":  154
+}
