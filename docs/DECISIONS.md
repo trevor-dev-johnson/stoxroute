@@ -147,3 +147,13 @@ This is an append-only record of decisions that would otherwise get relitigated 
 **Consequence:** Execution remains off by default and fails closed on disabled/misconfigured gates, origin mismatch, wallet change, expiry, registry/provider mismatch, altered transactions, simulation failure, or ambiguous submission. Process-local duplicate coalescing is not treated as durable state.
 
 **Clarifies:** D012 and D014.
+
+## 2026-09-16 — D016: Explain small route differences without calling them savings
+
+**Decision:** Show the leading complete quote with three adjacent facts: additional share-equivalent exposure, relative basis-point advantage, and an approximate quote-implied value difference calculated from the winning route's quoted USDC-per-share-equivalent.
+
+**Reason:** Judges and users should understand the scale of a difference in seconds, but no purchase or realized saving has occurred.
+
+**Consequence:** The UI labels the dollar figure as quote-implied, places estimate/restriction copy beside it, and withholds all three winner facts for partial or stale rounds.
+
+**Clarifies:** D012.

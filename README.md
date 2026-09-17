@@ -1,38 +1,108 @@
 # StoxRoute
 
-StoxRoute compares current Jupiter quotes for NVDAx and NVDAon using equal USDC inputs, then normalizes raw token output with each mint's live Token-2022 Scaled UI multiplier. Quote mode does not require a wallet. A supervised Wallet Standard review/sign/receipt path is implemented, but transaction preparation is blocked server-side by default until the documented eligibility and verification gates pass.
+**Compare the exposure, not the token count.**
 
-## Run locally
+StoxRoute compares live Jupiter routes for NVDAx and NVDAon using the same exact USDC input. It normalizes each token output with current onchain Token-2022 Scaled UI state so users can compare NVIDIA share-equivalent exposure rather than misleading raw token quantities. The comparison works without a wallet.
+
+![StoxRoute desktop comparison](docs/screenshots/stoxroute-desktop.png)
+
+## The problem
+
+Tokenized representations of the same underlying company can use different decimals, multipliers, issuers, fees, and liquidity. A larger raw token count does not necessarily represent more underlying exposure, and matching ISINs do not make instruments legally identical or interchangeable.
+
+## The solution
+
+StoxRoute gives both supported routes one equal USDC budget, fetches them together, reads each mint's current normalization state from Solana, and ranks only a complete and fresh pair by share-equivalent exposure. The result identifies the issuer and token, additional normalized exposure, relative basis-point difference, and a clearly labeled quote-implied value difference.
+
+The current scope is deliberately narrow: NVIDIA, NVDAx, NVDAon, USDC, Jupiter Swap V2, and Solana mainnet.
+
+## Verified functionality
+
+- Live walletless comparison of NVDAx and NVDAon for `$1`–`$10,000` USDC.
+- Exact decimal conversion and BigInt-safe base-unit handling.
+- Current Token-2022 Scaled UI multiplier resolution at a shared confirmed slot.
+- Concurrent Jupiter Swap V2 routes with freshness, response-skew, partial, throttle, malformed-response, and stale-state handling.
+- Honest complete-pair ranking; a single available route never becomes a winner.
+- Wallet Standard discovery through Solana Wallet Adapter, including Phantom when installed.
+- Server-disabled supervised execution path with wallet proof, optional allowlist, fresh taker order, signed intent binding, decoded transaction validation, simulation, and confirmed-chain receipt accounting.
+- 37 domain and execution-boundary tests, production build, and desktop/mobile browser verification.
+
+No live transaction has been signed, submitted, or confirmed. Execution remains disabled pending an independently eligible tester and live mainnet verification.
+
+## Product walkthrough
+
+1. Open the app without connecting a wallet.
+2. Keep NVIDIA selected and choose a USDC preset or enter an exact amount.
+3. Select **Compare routes**. Both issuer routes refresh as one comparison round.
+4. Read the leading quote, normalized exposure difference, quote-implied value difference, and basis-point advantage.
+5. Expand **Instrument details** to inspect mint, raw output, multiplier, router, fee facts, and quote time.
+6. Select either issuer for review. With the default server configuration, purchasing remains visibly unavailable.
+
+The display expires after 15 seconds. Refresh both routes before treating a result as current.
+
+## Architecture
+
+| Layer | Responsibility |
+|---|---|
+| Next.js App Router | Single responsive comparison application and server-only API boundary |
+| Solana JSON-RPC | Confirmed mint state, chain time, simulation, and confirmed transaction metadata |
+| Jupiter Swap V2 | Walletless comparison orders plus gated taker-specific order/execute flow |
+| `decimal.js` + BigInt | Precise normalization and integer base-unit handling |
+| Wallet Adapter | Wallet Standard discovery and browser-side signing only |
+| HMAC intent envelopes | Short-lived binding of wallet, issuer, amount, quote IDs, expiry, and transaction message |
+
+The core calculation is:
+
+```text
+token units = output base units / 10^mint decimals
+share-equivalent exposure = token units × active onchain multiplier
+```
+
+Historical evidence under `docs/evidence/` and `research/` is never used as a runtime fallback.
+
+## Safety model
+
+- `EXECUTION_ENABLED=false` blocks preparation on the server even if the UI is bypassed.
+- Execution mutations require the configured application origin and a signed wallet challenge.
+- A configured wallet allowlist is enforced server-side.
+- Every order refreshes mint state and requires exact input mint, output mint, amount, taker, issuer, and symbol matches.
+- The decoded transaction must contain the reviewed wallet signer and mints and pass simulation.
+- Submission requires the unchanged reviewed message and a valid Ed25519 wallet signature.
+- A receipt is confirmed only from positive onchain wallet USDC debit and selected-token credit deltas.
+- The application never asks for or handles seed phrases or private keys.
+
+These controls are not legal or eligibility approval. Tokenized assets can have issuer, liquidity, transfer, eligibility, and jurisdiction restrictions.
+
+## Local setup
+
+Requirements: Node.js 24.x and npm 11.x were used for the verified build.
 
 ```powershell
+git clone https://github.com/trevor-dev-johnson/stoxroute.git
+Set-Location stoxroute
 Copy-Item .env.example .env.local
 npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. The server uses `SOLANA_RPC_URL` for confirmed mint state and an optional `JUPITER_API_KEY` for Jupiter Swap V2. Do not expose either through client code unless the RPC endpoint is intentionally public.
+Open `http://localhost:3000`. Quote mode works with the defaults and does not require a wallet.
 
-Phantom and other installed Wallet Standard wallets are discovered by Wallet Adapter without bundling legacy wallet-specific adapters. Connecting a wallet is optional for comparison.
+## Environment variables
 
-## Supervised execution configuration
+| Variable | Scope | Purpose |
+|---|---|---|
+| `SOLANA_RPC_URL` | Server | Confirmed mint reads, simulation, and receipts |
+| `NEXT_PUBLIC_SOLANA_RPC_URL` | Public client | Wallet Adapter connection endpoint |
+| `NEXT_PUBLIC_APP_URL` | Public build | Canonical metadata/social-sharing origin |
+| `APP_ORIGIN` | Server | Exact allowed origin for execution mutations |
+| `JUPITER_API_KEY` | Server | Optional for comparison; required for managed execution |
+| `EXECUTION_ENABLED` | Server | Exact `true` enables the supervised execution boundary |
+| `EXECUTION_ALLOWED_WALLETS` | Server | Comma-separated approved tester wallets |
+| `EXECUTION_INTENT_SECRET` | Server | Random HMAC secret of at least 32 characters |
 
-Leave `EXECUTION_ENABLED=false` for the public comparison demo. To prepare a supervised tester environment, set all of the following on the server:
+Never expose the Jupiter key or intent secret in a `NEXT_PUBLIC_` variable. Leave execution disabled unless the documented tester gate is satisfied.
 
-```dotenv
-APP_ORIGIN=https://the-exact-deployment-origin.example
-EXECUTION_ENABLED=true
-EXECUTION_ALLOWED_WALLETS=Base58TesterWalletAddress
-EXECUTION_INTENT_SECRET=a-random-server-only-secret-of-at-least-32-characters
-JUPITER_API_KEY=server-side-jupiter-api-key
-SOLANA_RPC_URL=https://a-reliable-mainnet-rpc.example
-NEXT_PUBLIC_SOLANA_RPC_URL=https://an-intentionally-public-mainnet-rpc.example
-```
-
-`EXECUTION_ENABLED=true` is an operational switch, not eligibility approval. The allowlist may technically be empty, but the supervised test must configure the approved tester wallet. Never place `JUPITER_API_KEY` or `EXECUTION_INTENT_SECRET` in a `NEXT_PUBLIC_` variable.
-
-The server issues a short-lived wallet challenge, refreshes current mint state, requests a new taker-specific Jupiter order, validates and simulates the decoded transaction, and binds the reviewed wallet/instrument/input/exposure/request/expiry/message hash into an authenticated envelope. The execute route verifies the unchanged signed message and wallet signature before forwarding the original payload. A confirmed receipt is calculated from onchain wallet token-balance deltas; quote estimates never become receipt values.
-
-## Checks
+## Verification
 
 ```powershell
 npm run typecheck
@@ -41,10 +111,30 @@ npm test
 npm run build
 ```
 
-## Current boundary
+The repository additionally uses staged secret-pattern and sensitive-filename checks before release. Current npm audit output includes 12 moderate transitive advisories in the Solana wallet/web3 dependency tree without a compatible automatic fix; avoid forcing a breaking upgrade during the sprint.
 
-The application ranks only complete, current quote pairs by share-equivalent exposure. A partial round has no winner. Quote fees are displayed as provider facts and are not subtracted twice. This comparison is not issuer-quality advice and matching ISINs do not make the instruments legally identical. Historical files under `docs/evidence` and `research` are evidence and test fixtures, never runtime fallbacks.
+## Demo guidance
 
-Routing is supplied by Jupiter, instruments and registry data by xStocks and Ondo, and mint state by Solana JSON-RPC. See `docs/` for architecture, evidence provenance, execution gating, and hackathon constraints.
+Use a fresh browser session, keep execution disabled, run the `$1,000` comparison, explain the three verdict numbers, expand one instrument, and select the leading route. Say explicitly that the figures are current quote estimates and that the purchase path is implemented but not live-verified. See [the submission copy and 60–90 second script](docs/SUBMISSION.md).
 
-No mainnet transaction is signed or submitted by the automated test suite. Dependency audit currently reports 12 moderate transitive advisories in the Solana wallet/web3 stack with no compatible automatic fix; review upstream releases before deployment rather than forcing a breaking upgrade during the sprint.
+![StoxRoute mobile comparison](docs/screenshots/stoxroute-mobile.png)
+
+## Limitations
+
+- NVIDIA is the only enabled company.
+- Only NVDAx and NVDAon are compared.
+- Quote ranking does not assess issuer quality or legal equivalence.
+- Quote-implied value difference is an explanatory estimate, not realized savings.
+- Public RPC and provider rate limits can temporarily prevent a complete comparison.
+- No deployment, eligible tester transaction, or confirmed receipt has been verified yet.
+
+## Roadmap
+
+1. Deploy the walletless comparison with reliable server RPC and Jupiter credentials.
+2. Complete one independently eligible, smallest-meaningful-amount supervised mainnet verification.
+3. Record actual fee/debit semantics and confirmed receipt evidence.
+4. Revalidate Tesla/SPY only after the core submission is complete.
+
+## Sources and credits
+
+Solana supplies the chain and Token-2022 infrastructure; Jupiter supplies routing and managed execution; xStocks and Ondo supply the compared instruments and issuer data. Core open-source dependencies include Next.js, React, Solana Web3.js, Solana Wallet Adapter, Decimal.js, Zod, TweetNaCl, and Vitest. See `package.json` and `package-lock.json` for exact versions.

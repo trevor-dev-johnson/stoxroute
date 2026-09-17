@@ -1,10 +1,10 @@
 # StoxRoute current status
 
-Last updated: **2026-09-15 22:28 Eastern**, after the unblocked M3 implementation and local verification.
+Last updated: **2026-09-16 20:34 Eastern**, after M3 publication and M4 submission-readiness work.
 
 ## Phase
 
-**M0–M2 are complete locally. Unblocked M3 wallet, review, server-gate, transaction-validation, simulation, submission, and receipt infrastructure is implemented and tested.** Execution remains intentionally gated; no deployment, live taker order, wallet signature, submission, or confirmation has been verified.
+**M0–M2 are complete. Unblocked M3 infrastructure is implemented, tested, committed, and published. M4 repository, walkthrough, metadata, screenshots, submission copy, and demo script are ready.** Execution remains intentionally gated; deployment, demo recording, hackathon form submission, and live tester execution are not complete.
 
 Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **2026-09-18 16:00 Eastern / 20:00 UTC**. Main track only.
 
@@ -28,12 +28,12 @@ Findings are in [VERIFIED-FINDINGS.md](VERIFIED-FINDINGS.md); they are not runti
 - [x] M3 engineering: gated wallet review/sign/execute/receipt flow implemented locally.
 - [ ] M3: fee semantics checked with taker-specific order and actual receipt.
 - [ ] M3: eligible tester and successful mainnet transaction evidence.
-- [ ] M4: stable deployment and demo video.
+- [ ] M4: stable deployment and demo video (local production build and recording script complete).
 - [ ] M4: dependencies credited, submission prepared and submitted.
 
 ## Next task — requires Trevor
 
-Identify an independently eligible tester, privately verify the issuer/platform access basis, and provide that tester's base58 wallet plus server-side Jupiter API key/reliable mainnet RPC for a smallest-meaningful-amount supervised run. Keep `EXECUTION_ENABLED=false` until those prerequisites are satisfied.
+Create the judge-accessible deployment with `EXECUTION_ENABLED=false`, record/upload the scripted demo, then register and submit the repository/deployment/video links before the conservative September 18 deadline.
 
 ## Unknowns and blockers
 
@@ -95,3 +95,14 @@ Append a concise note and update phase/checklists/next task above:
 - Blocked/unverified: eligible independent tester/access basis, approved wallet, Jupiter key, reliable deployment RPC, live taker response/schema behavior, live simulation/RFQ signature behavior, wallet authorization, provider submission, confirmed receipt, deployment, and hackathon submission.
 - Decisions changed: D015 records stateless fail-closed intent and confirmed-receipt behavior.
 - Exact next task: Trevor identifies an independently eligible tester and supplies the approved wallet/credentials for a supervised smallest-meaningful-amount mainnet verification; do not enable execution before then.
+
+### 2026-09-16 20:34 Eastern — `main` after M3 baseline `39b37f6`
+
+- Published: initialized the existing empty `trevor-dev-johnson/stoxroute` GitHub repository, committed the complete M0–M3 project as `39b37f6`, and pushed `main`. The staged scan found only documented placeholders/test constants and two false-positive token-symbol fragments; no local environment or secret file was committed.
+- Implemented for M4: three-step walletless walkthrough; clearer leading-quote label; share-equivalent, quote-implied dollar, and bps verdict; corrected stale/partial refresh action; improved loading/error copy; visible tokenized-asset restrictions; polished metadata; custom SVG favicon; reproducible/static social preview; production desktop/mobile screenshots; comprehensive README; concise submission copy and 60–90 second demo script.
+- Checks run and actual results: `npm run typecheck` passed; `npm run lint` passed; `npm test` passed 37/37 across 7 files; `npm run build` passed with `/` and `/opengraph-image` static plus six dynamic API routes. Production browser checks at 1440×1000 and 390×844 covered empty, loading/live, invalid input, details, route selection, stale refresh, disabled purchasing, visible restrictions, no horizontal overflow, and an empty warning/error console.
+- Live evidence: walletless production-browser quote rounds completed successfully; current winners varied by live response and were not hardcoded. Execution status remained disabled. No wallet was authorized and no transaction was prepared, signed, submitted, or confirmed.
+- Official-page discrepancy: on September 16 the Stocklana header/countdown showed September 25, while its embedded rules still said September 18 at 4:00 PM Eastern. Continue using September 18 as the safe deadline.
+- Blocked/unverified: judge-accessible deployment/domain, recorded/uploaded demo, hackathon registration/form confirmation, eligible independent tester, live taker order/simulation, wallet authorization, submission, and confirmed receipt.
+- Decisions changed: D016 records the quote-implied value explanation without realized-savings language.
+- Exact next task: Trevor deploys with the server gate off, records/uploads the prepared demo, and submits the links; the eligible-tester transaction remains a separate optional strengthening step.

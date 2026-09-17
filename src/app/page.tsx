@@ -22,13 +22,22 @@ function compact(value: string, places = 8) {
 function money(value: string) { return `$${compact(value, 4)}`; }
 function shortMint(mint: string) { return `${mint.slice(0, 6)}…${mint.slice(-6)}`; }
 
+function quoteValueDifference(round: ComparisonRound): string | null {
+  if (!round.comparison?.winnerSymbol) return round.comparison?.label === "equal" ? "$0.00" : null;
+  const winner = round.candidates.find((candidate) => candidate.status === "available" && candidate.symbol === round.comparison?.winnerSymbol);
+  if (!winner || winner.status !== "available") return null;
+  const value = new Decimal(round.comparison.additionalExposure).mul(winner.usdcPerShareEquivalent);
+  if (value.gt(0) && value.lt("0.01")) return "<$0.01";
+  return `$${value.toDecimalPlaces(2).toFixed(2)}`;
+}
+
 function CandidateView({ candidate, winner, stale, selected, onReview }: { candidate: ComparisonRound["candidates"][number]; winner: boolean; stale: boolean; selected: boolean; onReview: (candidate: AvailableCandidate) => void }) {
   const available = candidate.status === "available";
   return (
     <article className={`route ${winner && !stale ? "route--winner" : ""}`} aria-label={`${candidate.issuer} ${candidate.symbol}`}>
       <div className="route__head">
         <div><p className="eyebrow">{candidate.issuer}</p><h3>{candidate.symbol}</h3></div>
-        <span className={`status-dot ${available ? "status-dot--live" : "status-dot--error"}`}>{available ? (stale ? "stale" : "live") : "unavailable"}</span>
+        <span className={`status-dot ${available ? "status-dot--live" : "status-dot--error"}`}>{available ? (stale ? "stale" : winner ? "leading quote" : "live") : "unavailable"}</span>
       </div>
       {available ? (
         <>
@@ -80,6 +89,7 @@ export default function Home() {
     const bps = compact(round.comparison.advantageBps, 3);
     return round.comparison.label === "nearly_equal" ? `Quotes are nearly equal. ${winner?.issuer} leads by ${bps} bps.` : `${winner?.issuer} offers ${bps} bps more quoted exposure for this input.`;
   }, [round]);
+  const estimatedDifference = round ? quoteValueDifference(round) : null;
 
   async function compare(event?: FormEvent) {
     event?.preventDefault(); setLoading(true); setError(null);
@@ -97,24 +107,30 @@ export default function Home() {
       <header className="topbar"><a className="brand" href="#top" aria-label="StoxRoute home"><span className="brand__mark">SR</span>StoxRoute</a><div className="topbar__actions"><div className="network"><span /> Solana mainnet</div><WalletControl /></div></header>
       <section className="workspace" id="top">
         <div className="intro"><p className="eyebrow">Live issuer comparison · NVIDIA</p><h1>Compare the exposure,<br />not the token count.</h1><p className="intro__copy">Equal USDC in. Current Jupiter quotes normalized with each mint’s live on-chain multiplier.</p></div>
+        <ol className="walkthrough" aria-label="How StoxRoute works">
+          <li><span>01</span><div><strong>Set one budget</strong><small>Choose the same exact USDC input for both routes.</small></div></li>
+          <li><span>02</span><div><strong>Normalize exposure</strong><small>Live outputs are converted into NVIDIA share-equivalent exposure.</small></div></li>
+          <li><span>03</span><div><strong>Inspect the route</strong><small>See issuer, mint, fees, freshness, and restrictions before any wallet step.</small></div></li>
+        </ol>
         <form className="quote-form" onSubmit={compare} noValidate>
           <div className="asset-line"><div><span className="asset-symbol">NVDA</span><span>NVIDIA</span></div><span className="locked">Only enabled company</span></div>
           <label htmlFor="amount">USDC amount</label>
           <div className="amount-row"><div className="amount-field"><span>$</span><input id="amount" name="amount" value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="decimal" aria-describedby="amount-help" /></div><button className="compare-button" type="submit" disabled={loading}>{loading ? "Comparing…" : "Compare routes"}<span aria-hidden>→</span></button></div>
           <div className="preset-row" id="amount-help"><span>Presets</span>{PRESETS.map((preset) => <button type="button" key={preset} className={amount === preset ? "active" : ""} onClick={() => setAmount(preset)}>${Number(preset).toLocaleString()}</button>)}<span className="range">Range $1–$10,000</span></div>
         </form>
-        {error && <div className="notice notice--error" role="alert"><strong>Comparison unavailable</strong><span>{error}</span></div>}
+        {error && <div className="notice notice--error" role="alert"><div><strong>Comparison unavailable</strong><span>{error}</span></div><button type="button" onClick={() => void compare()}>Try both routes again</button></div>}
         <section className={`results ${loading ? "results--loading" : ""}`} aria-live="polite" aria-busy={loading}>
           <div className="results__head"><div><p className="eyebrow">Comparison round</p><h2>{round ? `${round.requestedUsdc} USDC → NVIDIA exposure` : "Two representations. One budget."}</h2></div>{round && <div className={`freshness ${stale ? "freshness--stale" : ""}`}><span />{stale ? "Refresh required" : `${age}s old`}</div>}</div>
           {loading && <div className="scanline"><span /></div>}
           {round ? (
             <><div className="routes">{round.candidates.map((candidate) => <CandidateView key={candidate.symbol} candidate={candidate} stale={stale || loading} winner={!loading && availableCount === 2 && round.comparison?.winnerSymbol === candidate.symbol} selected={selectedMint === candidate.mint} onReview={(selected) => { setSelectedMint(selected.mint); window.setTimeout(() => document.getElementById("execution")?.scrollIntoView({ behavior: "smooth" }), 0); }} />)}</div>
-            <div className={`verdict ${!round.comparison || stale ? "verdict--muted" : ""}`}><span className="verdict__glyph" aria-hidden>{round.comparison && !stale ? "↗" : "i"}</span><div><p className="eyebrow">{loading ? "Refreshing round" : stale ? "Stale result" : round.comparison ? "Quoted exposure" : "Insufficient evidence"}</p><strong>{loading ? "Prior results are stale while both routes refresh." : stale ? "These quotes have passed the 15-second display window." : comparisonCopy ?? "Only one or no current route is available."}</strong><p>{round.comparison ? `${compact(round.comparison.additionalExposure)} additional share-equivalent. ` : ""}Quote output only; issuer rights and final wallet costs can differ.</p></div><button type="button" onClick={() => { const winner = round.candidates.find((candidate): candidate is AvailableCandidate => candidate.status === "available" && candidate.symbol === round.comparison?.winnerSymbol); if (winner) setSelectedMint(winner.mint); }} disabled={loading || stale || !round.comparison}>{stale ? "Refresh comparison" : "Review leading route"}</button></div></>
-          ) : <div className="empty-state"><div className="empty-state__axis"><span>NVDAx</span><i /><span>NVDAon</span></div><p>Run a comparison to fetch both routes in one current round.</p></div>}
+            <div className={`verdict ${!round.comparison || stale ? "verdict--muted" : ""}`}><span className="verdict__glyph" aria-hidden>{round.comparison && !stale ? "↗" : "i"}</span><div><p className="eyebrow">{loading ? "Refreshing round" : stale ? "Stale result" : round.comparison ? "Quoted exposure" : "Insufficient evidence"}</p><strong>{loading ? "Prior results are stale while both routes refresh." : stale ? "These quotes have passed the 15-second display window." : comparisonCopy ?? "Only one route answered. A winner requires two current quotes."}</strong>{round.comparison && !stale ? <div className="verdict__facts"><span><b>+{compact(round.comparison.additionalExposure)}</b> share-equivalent</span><span><b>{estimatedDifference}</b> quote-implied value difference</span><span><b>{compact(round.comparison.advantageBps, 3)} bps</b> relative advantage</span></div> : <p>Refresh the complete pair before drawing a route comparison.</p>}<p>Estimates only. Issuer rights, liquidity, eligibility, jurisdiction, and final wallet costs can differ.</p></div><button type="button" onClick={() => { if (stale || !round.comparison) { void compare(); return; } const winner = round.candidates.find((candidate): candidate is AvailableCandidate => candidate.status === "available" && candidate.symbol === round.comparison?.winnerSymbol); if (winner) setSelectedMint(winner.mint); }} disabled={loading}>{stale || !round.comparison ? "Refresh both routes" : "Review leading route"}</button></div></>
+          ) : <div className="empty-state"><div className="empty-state__axis"><span>NVDAx</span><i /><span>NVDAon</span></div><p>{loading ? "Fetching both issuer routes and current mint multipliers…" : "Run a comparison to fetch both routes in one current round."}</p></div>}
         </section>
+        <aside className="risk-note" aria-label="Tokenized asset limitations"><p className="eyebrow">Before you compare</p><strong>Quotes estimate route output—not stock ownership or guaranteed execution.</strong><p>Tokenized assets can differ by issuer rights, liquidity, eligibility, transfer restrictions, and jurisdiction. StoxRoute compares normalized quote output; it does not recommend an issuer or determine whether you may acquire a token.</p></aside>
         <ExecutionPanel key={`${round?.comparisonId ?? "none"}:${selectedMint ?? "none"}`} round={round} candidate={selectedCandidate} stale={stale || loading} />
       </section>
-      <footer><span>Live comparison works without a wallet.</span><span>Execution is disabled pending eligible tester verification.</span></footer>
+      <footer><span>Live comparison works without a wallet.</span><span>Purchasing unavailable while the supervised execution gate is disabled.</span><a href="https://github.com/trevor-dev-johnson/stoxroute" target="_blank" rel="noreferrer">GitHub ↗</a></footer>
     </main>
   );
 }

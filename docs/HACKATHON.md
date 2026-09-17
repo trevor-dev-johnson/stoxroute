@@ -1,15 +1,15 @@
 # Stocklana requirements and submission
 
-Checked: **2026-09-15** against the [official Stocklana page](https://hackathons.solana.com/hackathons/stocklana). Recheck that page when submitting; do not infer new requirements from prize marketing.
+Checked again: **2026-09-16** against the [official Stocklana page](https://hackathons.solana.com/hackathons/stocklana). The page currently conflicts with itself: its header shows **September 25, 2026** and a nine-day countdown, while the embedded rules still say **Friday September 18 at 4:00 PM Eastern**. Treat the earlier September 18 deadline as controlling unless the organizer confirms the extension, and submit as early as possible.
 
 ## Official requirements
 
 | Item | Current rule |
 |---|---|
-| Deadline | Friday Sep 18, 2026, 4:00 PM Eastern = 20:00 UTC |
+| Deadline | Conflicting official display: header Sep 25; rules Sep 18 at 4:00 PM Eastern. Use Sep 18 as the safe deadline. |
 | Judging | Through Oct 2, 2026 |
 | Main track | $100,000, awarded by Solana Foundation |
-| Current total displayed | $110,000 including two $5,000 bounties |
+| Current total displayed | $121,000 across the main track and four sponsor tracks |
 | Theme | Improve use/ownership of tokenized stocks on Solana; focus on one problem |
 | Assessment | Real user/problem, working end-to-end demo, reason for Solana, execution quality |
 | Entry | Individuals or teams; one submission per team; original work |
@@ -40,12 +40,12 @@ No claimed uniqueness/market leadership, guaranteed savings or invented propriet
 
 - [ ] Registration confirmed; correct account/team selected.
 - [ ] Project title **StoxRoute** and concise description entered.
-- [ ] At least one required link exists and is accessible to judges.
+- [x] At least one required link exists: the public GitHub repository.
 - [ ] Prefer repository + live demo + video, although all three are not mandated.
-- [ ] Setup instructions, configuration names and architecture included in application README.
-- [ ] Dependencies, data sources and original contribution disclosed.
-- [ ] Evidence/limitations accurately distinguish quotes, simulations and real transactions.
-- [ ] No secrets or tester personal records in repo/video/logs.
+- [x] Setup instructions, configuration names and architecture included in application README.
+- [x] Dependencies, data sources and original contribution disclosed.
+- [x] Evidence/limitations accurately distinguish quotes, simulations and real transactions.
+- [x] Staged secret-pattern/filename scan passed; no tester personal records added.
 - [ ] Demo works in a fresh session without the developer's credentials for comparison.
 - [ ] All links and selected revision rechecked before submitting.
 - [ ] Submitted ahead of close; confirmation/status actually recorded.
@@ -67,4 +67,3 @@ Only use after the comparison app actually runs:
 > StoxRoute compares tokenized representations of the same underlying equity on Solana. Users choose NVIDIA and a USDC amount; the app obtains current Jupiter quotes for NVDAx and NVDAon and normalizes the outputs using each mint's decimals and current Scaled UI multiplier. It explains the difference in share-equivalent exposure while keeping issuer identity, fees, freshness and unavailable routes visible. The original work is the verified instrument mapping, normalization and comparison logic, and the user flow above existing Solana liquidity. Execution status and demo limitations are documented in the linked project.
 
 Add a confirmed execution statement only after M3 passes. Add no unsupported “realized savings” claim. The page links to Colosseum as a later opportunity; it does not establish automatic entry into another event.
-
