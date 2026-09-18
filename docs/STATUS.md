@@ -1,6 +1,6 @@
 # StoxRoute current status
 
-Last updated: **2026-09-17 20:56 Eastern**, after security review and production deployment.
+Last updated: **2026-09-17 22:02 Eastern**, after public deployment verification.
 
 ## Phase
 
@@ -123,4 +123,14 @@ Append a concise note and update phase/checklists/next task above:
 - Live evidence: walletless 1,000-USDC rounds completed on local production during review; execution remained disabled. No transaction was prepared, signed, submitted, or confirmed.
 - Blocked/unverified: dedicated deployment RPC/Jupiter credentials, eligible independent tester, live taker order/simulation, wallet authorization, confirmed receipt, recorded/uploaded demo, and hackathon form confirmation.
 - Decisions changed: D017 records the public HTTP hardening boundary.
+- Exact next task: Trevor records/uploads the prepared demo and submits the repository, deployment, and video links.
+
+### 2026-09-17 22:02 Eastern — public Vercel verification
+
+- Deployment access: disabled SSO protection for the `stoxroute` Vercel project only after Trevor's explicit approval. Git-fork protection remains enabled; no other project protection was changed.
+- Deployment repair: changed only the StoxRoute framework preset from `other` to `nextjs` and redeployed, because the original setting built successfully but produced no routable Next.js output.
+- Public verification: unauthenticated `https://stoxroute.vercel.app` returned the StoxRoute page with HTTP 200; `/api/quotes` returned HTTP 200 with two available live routes; `/api/execution/status` returned `enabled:false`, `configured:false`, and `testerRequired:true`; a direct challenge attempt returned HTTP 403.
+- Header verification: CSP, `nosniff`, `DENY` anti-framing, strict referrer policy, restricted permissions policy, `same-origin-allow-popups`, and HSTS were present on the public response.
+- Browser verification: the public 1,000-USDC walletless comparison completed with a fresh complete pair, estimate/restriction copy visible, purchasing labeled unavailable, and no browser warning/error logs.
+- Transaction truth: no transaction was prepared, signed, submitted, or confirmed.
 - Exact next task: Trevor records/uploads the prepared demo and submits the repository, deployment, and video links.
