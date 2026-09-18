@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Decimal from "decimal.js";
 import type { ComparisonRound } from "@/lib/routing/round";
 import { WalletControl } from "@/components/wallet-control";
@@ -76,6 +76,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [clock, setClock] = useState(0);
   const [selectedMint, setSelectedMint] = useState<string | null>(null);
+  const requestSequence = useRef(0);
+  const activeRequest = useRef<AbortController | null>(null);
 
   useEffect(() => { const timer = window.setInterval(() => setClock(Date.now()), 1_000); return () => window.clearInterval(timer); }, []);
   const stale = round ? clock > new Date(round.displayExpiresAt).getTime() : false;
@@ -92,14 +94,24 @@ export default function Home() {
   const estimatedDifference = round ? quoteValueDifference(round) : null;
 
   async function compare(event?: FormEvent) {
-    event?.preventDefault(); setLoading(true); setError(null);
+    event?.preventDefault();
+    const sequence = ++requestSequence.current;
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    setLoading(true); setError(null);
     try {
-      const response = await fetch("/api/quotes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ticker: "NVDA", amount }) });
+      const response = await fetch("/api/quotes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ticker: "NVDA", amount }), signal: controller.signal });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.message ?? "Comparison failed");
+      if (sequence !== requestSequence.current) return;
       setRound(payload as ComparisonRound); setSelectedMint(null); setClock(Date.now());
-    } catch (requestError) { setError(requestError instanceof Error ? requestError.message : "Comparison failed"); }
-    finally { setLoading(false); }
+    } catch (requestError) {
+      if (sequence === requestSequence.current && !(requestError instanceof DOMException && requestError.name === "AbortError")) {
+        setError(requestError instanceof Error ? requestError.message : "Comparison failed");
+      }
+    }
+    finally { if (sequence === requestSequence.current) { setLoading(false); activeRequest.current = null; } }
   }
 
   return (

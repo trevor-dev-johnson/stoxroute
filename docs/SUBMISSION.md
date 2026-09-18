@@ -1,6 +1,6 @@
 # StoxRoute submission kit
 
-Updated: 2026-09-16. This copy reflects the verified walletless comparison and implemented-but-disabled execution infrastructure. Do not add a transaction claim unless a real eligible tester transaction is confirmed.
+Updated: 2026-09-17. This copy reflects the deployed walletless comparison and implemented-but-disabled execution infrastructure. Do not add a transaction claim unless a real eligible tester transaction is confirmed.
 
 ## Concise submission description
 
@@ -51,7 +51,7 @@ Main track — Trading / Infrastructure.
 ## Remaining submission links
 
 - Repository: `https://github.com/trevor-dev-johnson/stoxroute`
-- Live demo: pending deployment
+- Live demo: `https://stoxroute.vercel.app`
 - Demo video: pending recording/upload
 - Hackathon project page and confirmation: pending Trevor registration/submission
 

@@ -3,18 +3,18 @@ import { z } from "zod";
 import { executeJupiterOrder } from "@/lib/providers/jupiter";
 import { type ReceiptPayload, openEnvelope, orderIntentSchema, sealEnvelope } from "@/lib/execution/envelope";
 import { ExecutionError, executionErrorResponse } from "@/lib/execution/errors";
-import { assertBoundedRequest, assertExecutionAuthorized, assertSameOrigin } from "@/lib/execution/gate";
+import { assertExecutionAuthorized, assertSameOrigin } from "@/lib/execution/gate";
 import { runExecutionOnce } from "@/lib/execution/idempotency";
 import { assertOrderNotExpired, simulatePreparedTransaction, validateSignedTransaction } from "@/lib/execution/transaction";
+import { parseBoundedJson } from "@/lib/http/json";
 
 export const runtime = "nodejs";
 const schema = z.object({ wallet: z.string().min(32).max(64), intent: z.string().max(8_000), signedTransaction: z.string().max(2_500) });
 
 export async function POST(request: Request) {
   try {
-    assertBoundedRequest(request);
     assertSameOrigin(request);
-    const input = schema.parse(await request.json());
+    const input = await parseBoundedJson(request, schema, 16_000);
     const { wallet, secret } = assertExecutionAuthorized(input.wallet);
     const intent = openEnvelope(input.intent, orderIntentSchema, secret);
     if (intent.wallet !== wallet) throw new ExecutionError("wallet_changed", "The connected wallet changed after order review.", 409);

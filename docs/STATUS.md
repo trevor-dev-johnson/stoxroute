@@ -1,10 +1,10 @@
 # StoxRoute current status
 
-Last updated: **2026-09-16 20:34 Eastern**, after M3 publication and M4 submission-readiness work.
+Last updated: **2026-09-17 20:56 Eastern**, after security review and production deployment.
 
 ## Phase
 
-**M0–M2 are complete. Unblocked M3 infrastructure is implemented, tested, committed, and published. M4 repository, walkthrough, metadata, screenshots, submission copy, and demo script are ready.** Execution remains intentionally gated; deployment, demo recording, hackathon form submission, and live tester execution are not complete.
+**M0–M2 are complete. Unblocked M3 infrastructure is implemented and published. M4 repository, walkthrough, metadata, screenshots, submission copy, demo script, security hardening, and public deployment are ready.** Execution remains intentionally gated; demo recording, hackathon form submission, and live tester execution are not complete.
 
 Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **2026-09-18 16:00 Eastern / 20:00 UTC**. Main track only.
 
@@ -28,20 +28,20 @@ Findings are in [VERIFIED-FINDINGS.md](VERIFIED-FINDINGS.md); they are not runti
 - [x] M3 engineering: gated wallet review/sign/execute/receipt flow implemented locally.
 - [ ] M3: fee semantics checked with taker-specific order and actual receipt.
 - [ ] M3: eligible tester and successful mainnet transaction evidence.
-- [ ] M4: stable deployment and demo video (local production build and recording script complete).
+- [ ] M4: stable deployment and demo video (deployment live; recording script complete; video pending).
 - [ ] M4: dependencies credited, submission prepared and submitted.
 
 ## Next task — requires Trevor
 
-Create the judge-accessible deployment with `EXECUTION_ENABLED=false`, record/upload the scripted demo, then register and submit the repository/deployment/video links before the conservative September 18 deadline.
+Record/upload the scripted demo, then register and submit the repository, `https://stoxroute.vercel.app`, and video links before the conservative September 18 deadline.
 
 ## Unknowns and blockers
 
 | Item | Current truth |
 |---|---|
-| Git remote/branch/commit/working tree | Target has no `.git` directory; changes are an uncommitted filesystem handoff |
+| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; security/deployment update pending final commit at this timestamp |
 | Framework/dependency versions/commands | Node 24.13.1, npm 11.8.0, Next 16.3.5, React 19.2.8; commands in README/package.json |
-| Deployment/domain | None verified; .com availability was reported only |
+| Deployment/domain | Production deployment verified at `https://stoxroute.vercel.app`; execution config is persisted as `false` across Vercel environments |
 | Jupiter credentials | No key configured; walletless spike worked, but managed execution currently requires a server-side key |
 | RPC setup | Public mainnet RPC worked for user; deployment provider unknown |
 | Current full mint owners/extensions | Runtime validates both as Token-2022 mints with matching decimals, metadata, a single Scaled UI config, initialized/unpaused state, and shared-slot chain time |
@@ -49,6 +49,14 @@ Create the judge-accessible deployment with `EXECUTION_ENABLED=false`, record/up
 | Transaction construction/simulation/signing/receipt | Infrastructure and fixture tests complete; no live taker order, wallet action, submission, or receipt verified |
 | Hackathon registration/submission | Not verified |
 | Optional Tesla/SPY | Discovery only; remaining checks listed in findings |
+
+## Security review summary
+
+- No high or critical production dependency advisories were reported. `npm audit --omit=dev` reports 12 moderate transitive advisories under the Solana wallet/web3 stack, with no compatible automatic fix for the current direct dependencies.
+- API request bodies now require JSON and are limited using actual streamed bytes. The execution gate remains server-side and fail-closed.
+- Production CSP, anti-framing, MIME-sniffing, referrer, permissions, opener, and HSTS headers are verified.
+- Quote requests have process-local burst protection, and the browser aborts/discards obsolete overlapping comparisons. Distributed throttling still depends on Vercel/provider controls.
+- No private keys, seed phrases, local environment files, or credentials were introduced or deployed.
 
 ## Existing research to preserve
 
@@ -106,3 +114,13 @@ Append a concise note and update phase/checklists/next task above:
 - Blocked/unverified: judge-accessible deployment/domain, recorded/uploaded demo, hackathon registration/form confirmation, eligible independent tester, live taker order/simulation, wallet authorization, submission, and confirmed receipt.
 - Decisions changed: D016 records the quote-implied value explanation without realized-savings language.
 - Exact next task: Trevor deploys with the server gate off, records/uploads the prepared demo, and submits the links; the eligible-tester transaction remains a separate optional strengthening step.
+
+### 2026-09-17 20:56 Eastern — production deployment review
+
+- Implemented: streamed JSON media-type/size enforcement across all API mutations; quote burst limiting; obsolete comparison cancellation; production browser security headers; deployment and submission-link documentation.
+- Checks run and actual results: `npm run typecheck` passed; `npm run lint` passed; `npm test` passed 40/40 across 8 files; `npm run build` passed. Production browser checks covered live walletless comparison, route details, route selection, 15-second stale state and refresh, disabled execution messaging, 390px layout geometry/no overflow, and browser warnings/errors. `npm audit --omit=dev` reported 0 high, 0 critical, and 12 moderate transitive advisories with no compatible fix.
+- Deployment: Vercel production build passed and was aliased to `https://stoxroute.vercel.app`. Persisted `EXECUTION_ENABLED=false` for production/preview/development and the production canonical origin values.
+- Live evidence: walletless 1,000-USDC rounds completed on local production during review; execution remained disabled. No transaction was prepared, signed, submitted, or confirmed.
+- Blocked/unverified: dedicated deployment RPC/Jupiter credentials, eligible independent tester, live taker order/simulation, wallet authorization, confirmed receipt, recorded/uploaded demo, and hackathon form confirmation.
+- Decisions changed: D017 records the public HTTP hardening boundary.
+- Exact next task: Trevor records/uploads the prepared demo and submits the repository, deployment, and video links.

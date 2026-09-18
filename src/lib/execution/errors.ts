@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { HttpRequestError } from "@/lib/http/json";
 
 export type ExecutionErrorCode =
   | "execution_disabled"
@@ -42,6 +43,12 @@ export function executionErrorResponse(error: unknown): Response {
     return Response.json(
       { error: "invalid_request", message: "The execution request is malformed." },
       { status: 400, headers: { "cache-control": "no-store" } },
+    );
+  }
+  if (error instanceof HttpRequestError) {
+    return Response.json(
+      { error: "invalid_request", message: error.message },
+      { status: error.status, headers: { "cache-control": "no-store" } },
     );
   }
   return Response.json(

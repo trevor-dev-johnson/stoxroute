@@ -2,6 +2,8 @@
 
 **Compare the exposure, not the token count.**
 
+**Live demo:** [stoxroute.vercel.app](https://stoxroute.vercel.app)
+
 StoxRoute compares live Jupiter routes for NVDAx and NVDAon using the same exact USDC input. It normalizes each token output with current onchain Token-2022 Scaled UI state so users can compare NVIDIA share-equivalent exposure rather than misleading raw token quantities. The comparison works without a wallet.
 
 ![StoxRoute desktop comparison](docs/screenshots/stoxroute-desktop.png)
@@ -25,7 +27,7 @@ The current scope is deliberately narrow: NVIDIA, NVDAx, NVDAon, USDC, Jupiter S
 - Honest complete-pair ranking; a single available route never becomes a winner.
 - Wallet Standard discovery through Solana Wallet Adapter, including Phantom when installed.
 - Server-disabled supervised execution path with wallet proof, optional allowlist, fresh taker order, signed intent binding, decoded transaction validation, simulation, and confirmed-chain receipt accounting.
-- 37 domain and execution-boundary tests, production build, and desktop/mobile browser verification.
+- 40 domain, HTTP-boundary, and execution-boundary tests, production build, and desktop/mobile browser verification.
 
 No live transaction has been signed, submitted, or confirmed. Execution remains disabled pending an independently eligible tester and live mainnet verification.
 
@@ -70,6 +72,9 @@ Historical evidence under `docs/evidence/` and `research/` is never used as a ru
 - Submission requires the unchanged reviewed message and a valid Ed25519 wallet signature.
 - A receipt is confirmed only from positive onchain wallet USDC debit and selected-token credit deltas.
 - The application never asks for or handles seed phrases or private keys.
+- JSON APIs enforce their actual streamed-body size and media type rather than trusting `Content-Length`.
+- Production responses set CSP, anti-framing, MIME-sniffing, referrer, permissions, opener, and HSTS headers.
+- The public quote endpoint has a small process-local burst limit; provider throttling remains authoritative across serverless instances.
 
 These controls are not legal or eligibility approval. Tokenized assets can have issuer, liquidity, transfer, eligibility, and jurisdiction restrictions.
 
@@ -111,7 +116,7 @@ npm test
 npm run build
 ```
 
-The repository additionally uses staged secret-pattern and sensitive-filename checks before release. Current npm audit output includes 12 moderate transitive advisories in the Solana wallet/web3 dependency tree without a compatible automatic fix; avoid forcing a breaking upgrade during the sprint.
+The repository additionally uses staged secret-pattern and sensitive-filename checks before release. Current production-dependency audit output includes 12 moderate transitive advisories in the Solana wallet/web3 dependency tree without a compatible automatic fix; avoid forcing a breaking upgrade during the sprint.
 
 ## Demo guidance
 
@@ -126,11 +131,12 @@ Use a fresh browser session, keep execution disabled, run the `$1,000` compariso
 - Quote ranking does not assess issuer quality or legal equivalence.
 - Quote-implied value difference is an explanatory estimate, not realized savings.
 - Public RPC and provider rate limits can temporarily prevent a complete comparison.
-- No deployment, eligible tester transaction, or confirmed receipt has been verified yet.
+- The public deployment uses default public Solana RPC/provider access, so shared-demo reliability is subject to upstream limits until dedicated credentials are configured.
+- No eligible tester transaction or confirmed receipt has been verified yet.
 
 ## Roadmap
 
-1. Deploy the walletless comparison with reliable server RPC and Jupiter credentials.
+1. Configure a reliable server RPC and optional Jupiter key for the public deployment.
 2. Complete one independently eligible, smallest-meaningful-amount supervised mainnet verification.
 3. Record actual fee/debit semantics and confirmed receipt evidence.
 4. Revalidate Tesla/SPY only after the core submission is complete.

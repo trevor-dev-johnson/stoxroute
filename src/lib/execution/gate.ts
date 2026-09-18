@@ -61,8 +61,3 @@ export function assertSameOrigin(request: Request): string {
   }
   return expected;
 }
-
-export function assertBoundedRequest(request: Request, maxBytes = 20_000): void {
-  const length = Number(request.headers.get("content-length") ?? 0);
-  if (Number.isFinite(length) && length > maxBytes) throw new ExecutionError("invalid_request", "The execution request is too large.", 413);
-}

@@ -157,3 +157,11 @@ This is an append-only record of decisions that would otherwise get relitigated 
 **Consequence:** The UI labels the dollar figure as quote-implied, places estimate/restriction copy beside it, and withholds all three winner facts for partial or stale rounds.
 
 **Clarifies:** D012.
+
+## 2026-09-17 — D017: Harden the public HTTP boundary before deployment
+
+**Decision:** Enforce JSON media type and actual streamed-body limits on every mutation route, add a small process-local quote burst limit, discard obsolete client quote responses, and ship production security headers that preserve Wallet Standard popup compatibility.
+
+**Reason:** `Content-Length` is client-controlled, overlapping comparisons can otherwise present an older response, and a public financial-routing demo needs explicit browser and abuse-resistance defaults.
+
+**Consequence:** Oversized or non-JSON requests fail before domain handling, stale concurrent responses cannot overwrite the active round, and the Vercel deployment is hardened without treating an in-memory limiter as distributed enforcement. `Cross-Origin-Opener-Policy` remains `same-origin-allow-popups` so wallet connection flows are not broken.

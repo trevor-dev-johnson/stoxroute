@@ -1,15 +1,15 @@
 import { prepareExecutionOrder, prepareOrderInputSchema } from "@/lib/execution/prepare";
 import { executionErrorResponse } from "@/lib/execution/errors";
-import { assertBoundedRequest, assertExecutionAuthorized, assertSameOrigin } from "@/lib/execution/gate";
+import { assertExecutionAuthorized, assertSameOrigin } from "@/lib/execution/gate";
 import { verifyWalletProof } from "@/lib/execution/wallet-proof";
+import { parseBoundedJson } from "@/lib/http/json";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    assertBoundedRequest(request);
     const origin = assertSameOrigin(request);
-    const input = prepareOrderInputSchema.parse(await request.json());
+    const input = await parseBoundedJson(request, prepareOrderInputSchema, 16_000);
     const { wallet, secret } = assertExecutionAuthorized(input.wallet);
     verifyWalletProof({ wallet, origin, challengeToken: input.challengeToken, signature: input.walletSignature, secret });
     const prepared = await prepareExecutionOrder({ ...input, wallet }, secret);
