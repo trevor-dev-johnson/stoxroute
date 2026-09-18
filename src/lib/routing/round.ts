@@ -1,34 +1,52 @@
 import { randomUUID } from "node:crypto";
-import { NVIDIA_CANDIDATES } from "@/lib/stocks/registry";
-import { loadNvidiaMintStates } from "@/lib/solana/mint-state";
+import { SUPPORTED_ASSETS, type StockCandidate, type SupportedAsset } from "@/lib/stocks/registry";
+import { loadAssetMintStates, type MintNormalizationState } from "@/lib/solana/mint-state";
 import { fetchWalletlessQuote, type QuoteResult } from "@/lib/providers/jupiter";
 import { compareExposure } from "@/lib/routing/compare";
 import { normalizeOutput, usdcPerShareEquivalent, usdcToBaseUnits } from "@/lib/routing/normalize";
 import { getExecutionStatus } from "@/lib/execution/gate";
 
 const MAX_RESPONSE_SKEW_MS = 2_000;
+const DISPLAY_WINDOW_MS = 30_000;
 
-async function fetchPair(inputBaseUnits: string): Promise<QuoteResult[]> {
-  return Promise.all(NVIDIA_CANDIDATES.map((candidate) => fetchWalletlessQuote(candidate, inputBaseUnits)));
+export type QuoteFetcher = (candidate: StockCandidate, inputBaseUnits: string) => Promise<QuoteResult>;
+
+export async function fetchPairWithRetry(
+  candidates: readonly [StockCandidate, StockCandidate],
+  inputBaseUnits: string,
+  quoteFetcher: QuoteFetcher = fetchWalletlessQuote,
+  sleep: (milliseconds: number) => Promise<void> = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
+): Promise<QuoteResult[]> {
+  const fetchPair = () => Promise.all(candidates.map((candidate) => quoteFetcher(candidate, inputBaseUnits)));
+  let quotes = await fetchPair();
+  if (quotes.some((quote) => !quote.ok && quote.code === "rate_limited")) {
+    const waitMs = Math.min(2_000, Math.max(...quotes.map((quote) => !quote.ok && quote.retryAfterMs ? quote.retryAfterMs : 0)));
+    await sleep(waitMs);
+    quotes = await fetchPair();
+  }
+  return quotes;
 }
 
-export async function createComparisonRound(requestedUsdc: string) {
-  const comparisonId = randomUUID();
-  const inputBaseUnits = usdcToBaseUnits(requestedUsdc);
-  const mintStates = await loadNvidiaMintStates();
+type RoundDependencies = {
+  quoteFetcher?: QuoteFetcher;
+  mintLoader?: (asset: SupportedAsset) => Promise<MintNormalizationState[]>;
+  sleep?: (milliseconds: number) => Promise<void>;
+  now?: () => number;
+  createId?: () => string;
+};
 
-  let quotes = await fetchPair(inputBaseUnits);
-  if (quotes.some((quote) => !quote.ok && quote.code === "rate_limited")) {
-    const waitMs = Math.max(...quotes.map((quote) => !quote.ok && quote.retryAfterMs ? quote.retryAfterMs : 0));
-    await new Promise((resolve) => setTimeout(resolve, waitMs));
-    quotes = await fetchPair(inputBaseUnits);
-  }
+export async function createComparisonRoundForAsset(asset: SupportedAsset, requestedUsdc: string, dependencies: RoundDependencies = {}) {
+  const now = dependencies.now ?? Date.now;
+  const comparisonId = (dependencies.createId ?? randomUUID)();
+  const inputBaseUnits = usdcToBaseUnits(requestedUsdc);
+  const mintStates = await (dependencies.mintLoader ?? loadAssetMintStates)(asset);
+  const quotes = await fetchPairWithRetry(asset.candidates, inputBaseUnits, dependencies.quoteFetcher, dependencies.sleep);
 
   const successfulFinishTimes = quotes.filter((quote) => quote.ok).map((quote) => quote.finishedAtMs);
   const responseSkewMs = successfulFinishTimes.length === 2 ? Math.abs(successfulFinishTimes[0] - successfulFinishTimes[1]) : null;
   const skewed = responseSkewMs !== null && responseSkewMs > MAX_RESPONSE_SKEW_MS;
 
-  const candidates = NVIDIA_CANDIDATES.map((candidate, index) => {
+  const candidates = asset.candidates.map((candidate, index) => {
     const quote = quotes[index];
     const state = mintStates[index];
     if (!quote.ok) return { issuer: candidate.issuer, symbol: candidate.symbol, mint: candidate.mint, status: "unavailable" as const, failure: quote };
@@ -41,7 +59,7 @@ export async function createComparisonRound(requestedUsdc: string) {
       issuer: candidate.issuer,
       symbol: candidate.symbol,
       mint: candidate.mint,
-      isin: candidate.isin,
+      underlyingIsin: candidate.underlyingIsin,
       status: "available" as const,
       rawOutAmount: quote.rawOutAmount,
       exposure,
@@ -51,6 +69,8 @@ export async function createComparisonRound(requestedUsdc: string) {
       multiplier: state.multiplier,
       multiplierEffectiveTimestamp: state.multiplierConfig.newMultiplierEffectiveTimestamp,
       mintSlot: state.slot,
+      normalizationFetchedAt: state.fetchedAt,
+      normalizationCacheStatus: state.cacheStatus,
       quoteStartedAt: quote.startedAt,
       quoteFinishedAt: quote.finishedAt,
       router: quote.router,
@@ -67,13 +87,17 @@ export async function createComparisonRound(requestedUsdc: string) {
       )
     : null;
 
+  const createdAtMs = now();
   return {
     comparisonId,
-    ticker: "NVDA",
+    ticker: asset.ticker,
+    underlyingName: asset.underlyingName,
+    underlyingIsin: asset.underlyingIsin,
+    instrumentType: asset.instrumentType,
     requestedUsdc,
     inputBaseUnits,
-    createdAt: new Date().toISOString(),
-    displayExpiresAt: new Date(Date.now() + 15_000).toISOString(),
+    createdAt: new Date(createdAtMs).toISOString(),
+    displayExpiresAt: new Date(createdAtMs + DISPLAY_WINDOW_MS).toISOString(),
     responseSkewMs,
     candidates,
     comparison,
@@ -81,4 +105,8 @@ export async function createComparisonRound(requestedUsdc: string) {
   };
 }
 
-export type ComparisonRound = Awaited<ReturnType<typeof createComparisonRound>>;
+export async function createComparisonRound(requestedUsdc: string) {
+  return createComparisonRoundForAsset(SUPPORTED_ASSETS[0], requestedUsdc);
+}
+
+export type ComparisonRound = Awaited<ReturnType<typeof createComparisonRoundForAsset>>;

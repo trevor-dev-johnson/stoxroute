@@ -1,14 +1,14 @@
 # StoxRoute submission kit
 
-Updated: 2026-09-17. This copy reflects the deployed walletless comparison and implemented-but-disabled execution infrastructure. Do not add a transaction claim unless a real eligible tester transaction is confirmed.
+Updated: 2026-09-18. This copy reflects the multi-asset walletless scanner and implemented-but-disabled execution infrastructure. Do not add a transaction claim unless a real eligible tester transaction is confirmed.
 
 ## Concise submission description
 
-StoxRoute helps Solana users compare tokenized representations of the same company before choosing a route. For an equal USDC budget, it fetches current Jupiter quotes for NVDAx and NVDAon, reads each mint's live Token-2022 Scaled UI multiplier, and converts output into comparable NVIDIA share-equivalent exposure. The interface makes issuer identity, freshness, fees, route failures, and small differences explicit. Walletless comparison is live; a fail-closed Wallet Standard execution and confirmed-receipt path is implemented but remains disabled pending eligible tester verification.
+StoxRoute is a walletless opportunity scanner for equivalent tokenized stocks on Solana. One USDC budget scans verified xStocks/Ondo pairs for NVIDIA, Tesla, and SPY, normalizes live Jupiter output with current Token-2022 multiplier state, and ranks only complete fresh pairs by basis-point or quote-implied dollar advantage. Partial failures, issuer identity, freshness, routers, and restrictions stay visible. Execution is fail-closed and disabled.
 
 ## Short tagline
 
-Compare the exposure, not the token count.
+One budget. Every verified pair.
 
 ## Suggested category
 
@@ -17,33 +17,33 @@ Main track — Trading / Infrastructure.
 ## 60–90 second demo script
 
 **0:00–0:08 — Problem**
-“There are multiple tokenized versions of NVIDIA on Solana, but their raw token counts are not directly comparable because decimals and onchain multipliers differ.”
+“Equivalent tokenized stocks can use different decimals and onchain multipliers, so raw token counts—and ticker similarity—are not enough to compare routes.”
 
 **0:08–0:20 — Product**
-“StoxRoute gives both issuer routes the same USDC budget and compares normalized NVIDIA share-equivalent exposure. It works without connecting a wallet.”
+“StoxRoute gives every verified issuer pair the same USDC budget, converts each live output into normalized underlying exposure, and ranks the complete comparisons. No wallet is needed.”
 
 **0:20–0:38 — Live comparison**
-“I’ll use the one-thousand-dollar preset and fetch both routes together. These are live Jupiter quotes using current confirmed mint state—not stored demo data.”
+“I’ll use the one-thousand-dollar preset. The board reports progress as it scans NVIDIA, Tesla, and SPY using live Jupiter quotes and current confirmed mint state—not stored demo data.”
 
 **0:38–0:56 — Explain the verdict**
-“The leading route is labeled here. In one line I can see the additional share-equivalent exposure, its approximate quote-implied value, and the relative basis-point difference. If either route fails or the round expires, StoxRoute refuses to declare a winner.”
+“Complete pairs rank by relative basis-point advantage, or I can sort by quote-implied dollar difference. Partial rows stay visible but are never called winners. I’ll select one row to inspect both normalized issuer routes.”
 
 **0:56–1:08 — Inspectability**
-“I can inspect the actual issuer, token mint, raw output, multiplier, router, included fee facts, and quote timestamp before choosing a route.”
+“The detail shows the actual issuer, underlying ISIN, mint, raw output, multiplier, router, included fee facts, cache status, and quote timestamp.”
 
 **1:08–1:20 — Safety and status**
 “The Wallet Standard review and transaction-validation path is implemented, but purchasing is server-disabled until an independently eligible tester completes verification. No transaction is implied here.”
 
 **1:20–1:28 — Close**
-“StoxRoute is a focused Solana comparison layer: equal budget in, understandable tokenized-stock exposure out.”
+“StoxRoute turns one budget into an honest, inspectable view of tokenized-stock route differences.”
 
 ## Recording checklist
 
 - Use a fresh desktop browser window at 1440×1000 or similar.
 - Confirm `EXECUTION_ENABLED=false` and do not connect or reveal a personal wallet.
-- Start on the empty state, then choose `$1,000` and run one fresh comparison.
+- Start on the empty state, then choose `$1,000` and run one fresh scan.
 - Record the live result that actually appears; never script a particular winner.
-- Expand one route's instrument details and select the leading route.
+- Sort the board, select one complete row, expand one route's instrument details, and select the leading route.
 - Pause briefly on the restrictions notice and disabled execution state.
 - Avoid API keys, terminal windows, browser extensions, bookmarks, personal notifications, or eligibility records.
 - Export at 1080p, check audio, and verify every linked artifact in a signed-out session.

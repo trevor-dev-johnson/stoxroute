@@ -48,10 +48,10 @@ export function ExecutionPanel({ round, candidate, stale }: { round: ComparisonR
   const walletChanged = Boolean(prepared && publicKey?.toBase58() !== prepared.review.wallet);
   const displayFlow: ExecutionFlowState = connecting
     ? "connecting"
-    : !connected
-      ? "disconnected"
-      : status && (!status.enabled || !status.configured)
+    : status && (!status.enabled || !status.configured)
         ? "unavailable"
+      : !connected
+        ? "disconnected"
         : walletChanged
           ? "wrong_wallet"
           : flow;
@@ -122,8 +122,8 @@ export function ExecutionPanel({ round, candidate, stale }: { round: ComparisonR
       <div className="execution__head"><div><p className="eyebrow">Supervised execution</p><h2>{candidate ? `Review ${candidate.symbol}` : "Select an issuer route"}</h2></div><span className={`execution-state execution-state--${displayFlow}`}>{labels[displayFlow]}</span></div>
       <div className="execution__body">
         <div className="execution__copy"><strong>{displayMessage}</strong><p>Comparison remains walletless. Signing is available only when the server gate, allowlist, wallet proof, fresh order, transaction validation, and simulation all pass.</p></div>
-        {!connected ? <button className="execution__action" type="button" onClick={() => setVisible(true)}>Connect wallet</button>
-          : !status?.enabled || !status.configured ? <button className="execution__action" type="button" disabled>Execution unavailable</button>
+        {status && (!status.enabled || !status.configured) ? <button className="execution__action" type="button" disabled>Execution unavailable</button>
+          : !connected ? <button className="execution__action" type="button" onClick={() => setVisible(true)}>Connect wallet</button>
           : !prepared ? <button className="execution__action" type="button" disabled={!candidate || stale || busy} onClick={prepare}>{candidate ? "Prepare fresh order" : "Select a route above"}</button>
           : <button className="execution__action" type="button" disabled={busy || expired || displayFlow === "wrong_wallet"} onClick={signAndExecute}>{expired ? "Order expired" : "Sign reviewed transaction"}</button>}
       </div>

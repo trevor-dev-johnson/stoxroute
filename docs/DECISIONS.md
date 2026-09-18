@@ -165,3 +165,13 @@ This is an append-only record of decisions that would otherwise get relitigated 
 **Reason:** `Content-Length` is client-controlled, overlapping comparisons can otherwise present an older response, and a public financial-routing demo needs explicit browser and abuse-resistance defaults.
 
 **Consequence:** Oversized or non-JSON requests fail before domain handling, stale concurrent responses cannot overwrite the active round, and the Vercel deployment is hardened without treating an in-memory limiter as distributed enforcement. `Cross-Origin-Opener-Policy` remains `same-origin-allow-popups` so wallet connection flows are not broken.
+
+## 2026-09-18 — D018: Expand walletless utility through a bounded verified scanner
+
+**Decision:** Add issuer-verified NVDA, TSLA, and SPY pairs to one validated registry and scan them sequentially while fetching the two routes inside each pair concurrently. Stream progress, isolate asset failures, and rank only complete fresh pairs.
+
+**Reason:** The normalization engine is useful across equivalent issuer pairs, but uncontrolled parallel requests would increase Jupiter throttling and a partial result must never become a false market-wide winner.
+
+**Consequence:** The primary workflow is one budget to a ranked Opportunity Board, with the existing per-asset detail preserved. The display window is 30 seconds, cached mint state is labeled, quote-implied dollar differences remain estimates, and all expanded routes remain walletless while execution stays server-disabled.
+
+**Supersedes:** D010 only as the walletless comparison scope; it does not broaden the NVIDIA-only execution allowlist.

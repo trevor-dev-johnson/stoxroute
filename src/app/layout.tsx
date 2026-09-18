@@ -7,9 +7,9 @@ import { SolanaWalletProvider } from "@/components/wallet-provider";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   applicationName: "StoxRoute",
-  title: { default: "StoxRoute — Compare tokenized NVIDIA routes", template: "%s · StoxRoute" },
-  description: "Compare live NVDAx and NVDAon routes by normalized NVIDIA share-equivalent exposure on Solana—without connecting a wallet.",
-  keywords: ["Solana", "tokenized stocks", "NVIDIA", "NVDAx", "NVDAon", "Jupiter"],
+  title: { default: "StoxRoute — Tokenized-stock opportunity scanner", template: "%s · StoxRoute" },
+  description: "Scan verified tokenized-stock issuer pairs and rank normalized exposure differences from current Solana and Jupiter data—without connecting a wallet.",
+  keywords: ["Solana", "tokenized stocks", "opportunity scanner", "NVIDIA", "Tesla", "SPY", "Jupiter"],
   authors: [{ name: "StoxRoute" }],
   creator: "StoxRoute",
   category: "finance",
@@ -18,14 +18,14 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "StoxRoute",
     title: "StoxRoute — Compare the exposure, not the token count",
-    description: "Live, normalized comparison of tokenized NVIDIA routes on Solana.",
-    images: [{ url: "/social-preview.png", width: 1200, height: 630, alt: "StoxRoute tokenized NVIDIA route comparison" }],
+    description: "Scan live, normalized issuer-route differences across verified tokenized stocks on Solana.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "StoxRoute tokenized-stock opportunity scanner" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "StoxRoute — Compare tokenized NVIDIA routes",
-    description: "Live, normalized comparison of NVDAx and NVDAon on Solana.",
-    images: ["/social-preview.png"],
+    title: "StoxRoute — Tokenized-stock opportunity scanner",
+    description: "Rank normalized issuer-route differences across NVIDIA, Tesla, and SPY on Solana.",
+    images: ["/opengraph-image"],
   },
 };
 

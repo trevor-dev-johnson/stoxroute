@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NVIDIA_CANDIDATES, TOKEN_2022_PROGRAM, type StockCandidate } from "@/lib/stocks/registry";
+import { SUPPORTED_ASSETS, TOKEN_2022_PROGRAM, type StockCandidate, type SupportedAsset } from "@/lib/stocks/registry";
 import { resolveActiveMultiplier, type ScaledUiConfig } from "@/lib/routing/normalize";
 
 const RPC_URL = process.env.SOLANA_RPC_URL ?? "https://api.mainnet-beta.solana.com";
@@ -43,7 +43,19 @@ export type MintNormalizationState = {
   slot: number;
   chainTime: number;
   fetchedAt: string;
+  cacheStatus: "live" | "cached";
 };
+
+const MAX_CHAIN_LAG_SECONDS = 120;
+const MAX_CHAIN_FUTURE_SECONDS = 60;
+
+export function assertPlausibleChainTime(chainTime: number, wallTime = Math.floor(Date.now() / 1_000)): void {
+  if (!Number.isSafeInteger(chainTime) || chainTime <= 0) throw new Error("Confirmed chain time is unavailable");
+  const delta = wallTime - chainTime;
+  if (delta > MAX_CHAIN_LAG_SECONDS || delta < -MAX_CHAIN_FUTURE_SECONDS) {
+    throw new Error("Confirmed chain time is stale or implausible");
+  }
+}
 
 async function rpc(method: string, params: unknown[]): Promise<unknown> {
   const response = await fetch(RPC_URL, {
@@ -101,34 +113,47 @@ function parseCandidate(
     slot,
     chainTime,
     fetchedAt,
+    cacheStatus: "live",
   };
 }
 
-let cached: { expiresAt: number; transitionAt: number; value: MintNormalizationState[] } | undefined;
+const cache = new Map<string, { expiresAt: number; transitionAt: number; value: MintNormalizationState[] }>();
 
-export async function loadNvidiaMintStates(force = false): Promise<MintNormalizationState[]> {
+export async function loadAssetMintStates(asset: SupportedAsset, force = false): Promise<MintNormalizationState[]> {
   const now = Date.now();
-  if (!force && cached && now < cached.expiresAt && now / 1000 < cached.transitionAt) return cached.value;
+  const cached = cache.get(asset.ticker);
+  if (!force && cached && now < cached.expiresAt && now / 1000 < cached.transitionAt) {
+    return cached.value.map((state) => ({ ...state, cacheStatus: "cached" }));
+  }
 
   const accountsRaw = await rpc("getMultipleAccounts", [
-    NVIDIA_CANDIDATES.map((candidate) => candidate.mint),
+    asset.candidates.map((candidate) => candidate.mint),
     { encoding: "jsonParsed", commitment: "confirmed" },
   ]);
   const accounts = accountsResponseSchema.parse(accountsRaw).result;
-  if (accounts.value.length !== NVIDIA_CANDIDATES.length || accounts.value.some((account) => account === null)) {
+  if (accounts.value.length !== asset.candidates.length || accounts.value.some((account) => account === null)) {
     throw new Error("One or more supported mint accounts are unavailable");
   }
   const blockTimeRaw = await rpc("getBlockTime", [accounts.context.slot]);
   const chainTime = blockTimeResponseSchema.parse(blockTimeRaw).result;
   if (chainTime === null) throw new Error("Confirmed chain time is unavailable");
+  assertPlausibleChainTime(chainTime, Math.floor(now / 1_000));
   const fetchedAt = new Date().toISOString();
-  const value = NVIDIA_CANDIDATES.map((candidate, index) =>
+  const value = asset.candidates.map((candidate, index) =>
     parseCandidate(candidate, accounts.value[index]!, accounts.context.slot, chainTime, fetchedAt),
   );
   const futureTransitions = value
     .map((state) => state.multiplierConfig.newMultiplierEffectiveTimestamp)
     .filter((timestamp) => timestamp > chainTime);
   const transitionAt = futureTransitions.length ? Math.min(...futureTransitions) : Number.POSITIVE_INFINITY;
-  cached = { value, expiresAt: now + 60_000, transitionAt };
+  cache.set(asset.ticker, { value, expiresAt: now + 60_000, transitionAt });
   return value;
+}
+
+export async function loadNvidiaMintStates(force = false): Promise<MintNormalizationState[]> {
+  return loadAssetMintStates(SUPPORTED_ASSETS[0], force);
+}
+
+export function clearMintStateCacheForTests(): void {
+  cache.clear();
 }

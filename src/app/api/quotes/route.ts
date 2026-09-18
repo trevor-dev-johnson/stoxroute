@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createComparisonRound } from "@/lib/routing/round";
+import { createComparisonRoundForAsset } from "@/lib/routing/round";
+import { assetForTicker, SUPPORTED_TICKERS } from "@/lib/stocks/registry";
 import { HttpRequestError, parseBoundedJson } from "@/lib/http/json";
 import { checkQuoteRateLimit } from "@/lib/http/rate-limit";
 
 export const runtime = "nodejs";
 
-const requestSchema = z.object({ ticker: z.literal("NVDA"), amount: z.string().min(1).max(32) });
+const requestSchema = z.object({ ticker: z.enum(SUPPORTED_TICKERS), amount: z.string().min(1).max(32) });
 
 export async function POST(request: Request) {
   try {
@@ -18,7 +19,9 @@ export async function POST(request: Request) {
       );
     }
     const input = await parseBoundedJson(request, requestSchema, 1_000);
-    const round = await createComparisonRound(input.amount);
+    const asset = assetForTicker(input.ticker);
+    if (!asset) throw new Error("Unsupported asset");
+    const round = await createComparisonRoundForAsset(asset, input.amount);
     return NextResponse.json(round, { headers: { "cache-control": "no-store", "x-ratelimit-remaining": String(limit.remaining) } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Comparison failed";

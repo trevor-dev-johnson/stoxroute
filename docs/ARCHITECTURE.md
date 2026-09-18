@@ -1,6 +1,6 @@
 # Architecture and comparison contract
 
-Updated: 2026-09-15. These are implementation decisions, not a description of code already built.
+Updated: 2026-09-18. This document describes the implemented walletless scanner contract and the separately gated execution boundary.
 
 ## Stack
 
@@ -24,7 +24,8 @@ Keep any compatible existing versions. On a new app, choose a mutually supported
 
 | Suggested path | Responsibility |
 |---|---|
-| `src/app/page.tsx` | Single comparison screen |
+| `src/app/page.tsx` | Opportunity Board plus selected-asset detail |
+| `src/app/api/opportunities/route.ts` | Stream bounded scan progress and isolated asset results |
 | `src/app/api/quotes/route.ts` | Validate supported ticker/input and return normalized quote round |
 | `src/app/api/order/route.ts` | Gated, fresh transaction preparation |
 | `src/app/api/execute/route.ts` | Validate signed intent and forward to execution provider |
@@ -34,6 +35,7 @@ Keep any compatible existing versions. On a new app, choose a mutually supported
 | `src/lib/providers/jupiter.ts` | HTTP calls, runtime schemas, provider errors, timestamps |
 | `src/lib/routing/normalize.ts` | Base units → token units → share-equivalent exposure |
 | `src/lib/routing/compare.ts` | Comparable-round checks and deterministic ranking |
+| `src/lib/routing/opportunities.ts` | Concurrency control, failure isolation, dollar calculation, and board sorting |
 | `src/lib/routing/fees.ts` | Quoted cost interpretation and explicit unknowns |
 | `src/lib/execution/` | Gating, transaction intent binding, signing payload, confirmation |
 | `tests/` | Domain, failure and execution-boundary tests |
@@ -42,19 +44,19 @@ Match existing directories if already established. This is not permission to rew
 
 ## Registry
 
-The runtime registry begins with NVIDIA and its two known mints. Use `docs/evidence/registry-snapshot.json` as provenance, not a blindly imported production registry. Recheck actual owners/decimals/extensions from live RPC; some fields were not printed in earlier console outputs.
+The runtime registry contains three independently reverified pairs: NVIDIA (NVDAx/NVDAon), Tesla (TSLAx/TSLAon), and SPDR S&P 500 ETF (SPYx/SPYon). Every pair has the same issuer-declared underlying ISIN. Exact issuer sources and the 2026-09-18 live mint verification are recorded in [ASSET-REGISTRY.md](ASSET-REGISTRY.md).
 
-Registry fields: underlying ticker/name/ISIN, issuer brand, token symbol, mint, chain, expected decimals when verified, official source, normalization method, enabled-for-comparison status. Execution eligibility is separate from comparison availability. Future Tesla/SPY entries remain disabled until their remaining checks pass.
+Registry fields include underlying ticker/name/ISIN and instrument type, issuer, token symbol, mint, expected decimals, official source, and verification date. Module-load validation rejects duplicate tickers, symbols or mints, duplicate issuers inside a pair, candidate/asset identity mismatches, and incomplete pairs. Execution eligibility remains separate from comparison availability; the expanded assets are walletless comparison routes only.
 
 ## Numeric definitions
 
-For the two verified NVIDIA representations, the onchain Scaled UI configuration provides the share-equivalent conversion. [xStocks multiplier guide](https://docs.xstocks.fi/developers/multipliers) and [Ondo pricing explanation](https://docs.ondo.finance/ondo-stocks/token-and-quote-pricing).
+For every supported representation, the onchain Scaled UI configuration provides the normalized-underlying conversion. [xStocks multiplier guide](https://docs.xstocks.fi/developers/multipliers) and [Ondo pricing explanation](https://docs.ondo.finance/ondo-stocks/token-and-quote-pricing).
 
 ```text
 rawInputUSDC = exact decimal USDC amount × 10^6
 tokenUnits = rawOutputBaseUnits / 10^mintDecimals
-shareEquivalentExposure = tokenUnits × activeMultiplier
-quotedUSDCPerShareEquivalent = requestedUSDC / shareEquivalentExposure
+normalizedUnderlyingExposure = tokenUnits × activeMultiplier
+quotedUSDCPerNormalizedUnit = requestedUSDC / normalizedUnderlyingExposure
 relativeExposureAdvantageBps = (higherExposure / lowerExposure - 1) × 10000
 ```
 
@@ -62,7 +64,7 @@ All monetary quantities crossing JSON boundaries are strings. Reject zero, negat
 
 Use decimal strings at ≥40 significant digits for domain arithmetic. Never turn raw token output into JS `Number`, sort rounded values, or multiply a previously scaled `uiAmount` again. The onchain multiplier itself is a protocol floating-point value; extra calculation precision prevents additional loss but does not imply perfect measurement of equity value.
 
-Share-equivalent exposure is an economic comparison unit. It is not a transferable ordinary share or a statement that both issuers grant identical rights.
+Normalized underlying exposure is an economic comparison unit. It is not a transferable ordinary share, ETF share, or a statement that both issuers grant identical rights.
 
 ## Active multiplier and time
 
@@ -70,7 +72,7 @@ Read both mints in the same `getMultipleAccounts` request. Retain context slot a
 
 Select `newMultiplier` when the chain time reaches `newMultiplierEffectiveTimestamp`; otherwise use `multiplier`. Retain both values and the effective timestamp. The active field depends on time; a timestamp may be in the past. [Solana integration guide](https://solana.com/docs/tokens/extensions/scaled-ui-amount/integration-guide).
 
-Proposed app policies: mint state can be cached for at most 60 seconds, never across a known multiplier transition; always refresh before execution. Reject missing/duplicate scaled configuration, invalid/nonpositive multiplier, wrong owner/type/mint, uninitialized or paused mint. Do not silently default an unknown multiplier to one. Existing freeze/mint authorities are not automatically a reason to exclude a supported issuer; a mint-level check does not prove a particular wallet can transfer it.
+Mint state can be cached for at most 60 seconds, never across a known multiplier transition; responses expose whether state was `live` or `cached`, and execution always refreshes. Confirmed block time more than 120 seconds behind or 60 seconds ahead of server wall time is rejected. Missing/duplicate scaled configuration, invalid/nonpositive multiplier, wrong owner/type/mint, mismatched metadata, uninitialized or paused mint fail closed.
 
 ## Quote round
 
@@ -81,7 +83,9 @@ Proposed app policies: mint state can be cached for at most 60 seconds, never ac
 5. Apply round freshness/skew rules. Return every candidate, including structured failure reasons.
 6. Rank only a complete, current, comparable pair. Show a partial result without a cross-issuer winner.
 
-Our initial policy (tunable, not a provider guarantee): 8-second HTTP timeout, at most one bounded retry honoring `Retry-After`, 2-second maximum spread between response completion times, 15-second display freshness from the older quote (or sooner if provider expiry applies). Return the round only when both are available within policy. Do not compare a newly retried quote to its stale sibling; retry the entire pair if budget permits, otherwise ask for a fresh round.
+Implemented policy: 8-second HTTP timeout, at most one bounded retry honoring `Retry-After` up to two seconds, 2-second maximum spread between response completion times, and a 30-second display window. A throttle refreshes the entire pair so a new quote is never compared with a stale sibling.
+
+The opportunity scan is bounded to the supported registry and processes one asset at a time; its two issuer quotes run concurrently. The NDJSON response emits a start event, one event per completed asset, and a final scan summary. One asset failure never aborts the others. Complete pairs sort by exact basis-point advantage by default or exact quote-implied dollar advantage on request; partial/unavailable rows stay visible but sort below complete comparisons.
 
 Disable the Compare button while a round runs, debounce editing, and discard late results for an obsolete input/request ID. Use manual refresh initially. Deduplicate identical in-flight requests as an optimization; do not rely on process memory for correctness across serverless instances. Never continuously poll six quotes for the three presets.
 

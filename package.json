@@ -1,7 +1,7 @@
 {
   "name": "stoxroute",
   "version": "0.1.0",
-  "description": "Compare live tokenized NVIDIA routes on Solana by normalized share-equivalent exposure.",
+  "description": "Scan verified tokenized-stock issuer pairs on Solana by normalized underlying exposure.",
   "private": true,
   "homepage": "https://github.com/trevor-dev-johnson/stoxroute#readme",
   "repository": {

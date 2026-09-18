@@ -32,3 +32,15 @@ describe("historical NVIDIA fixture", () => {
     expect(result.winnerSymbol).toBe("a"); expect(result.label).toBe("nearly_equal");
   });
 });
+
+describe("additional registry asset normalization", () => {
+  it("normalizes TSLA across 8- and 9-decimal mints", () => {
+    expect(normalizeOutput("250000000", 8, "1")).toBe("2.5");
+    expect(normalizeOutput("2500000000", 9, "1")).toBe("2.5");
+  });
+
+  it("applies the SPY scaled multipliers after decimal conversion", () => {
+    expect(normalizeOutput("100000000", 8, "1.005714560286254")).toBe("1.005714560286254");
+    expect(normalizeOutput("1000000000", 9, "1.0094730727840426")).toBe("1.0094730727840426");
+  });
+});

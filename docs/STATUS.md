@@ -1,10 +1,10 @@
 # StoxRoute current status
 
-Last updated: **2026-09-17 22:02 Eastern**, after public deployment verification.
+Last updated: **2026-09-18 12:08 Eastern**, after multi-asset scanner implementation and local verification.
 
 ## Phase
 
-**M0–M2 are complete. Unblocked M3 infrastructure is implemented and published. M4 repository, walkthrough, metadata, screenshots, submission copy, demo script, security hardening, and public deployment are ready.** Execution remains intentionally gated; demo recording, hackathon form submission, and live tester execution are not complete.
+**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled. The walletless product is now a verified three-asset Opportunity Board with selected-asset detail. M4 submission assets are updated and the full local release suite passes.** Production redeployment of this scanner, demo recording, hackathon form submission, and live tester execution are not complete at this timestamp.
 
 Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **2026-09-18 16:00 Eastern / 20:00 UTC**. Main track only.
 
@@ -17,6 +17,9 @@ Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. D
 - [x] Positive Jupiter quotes at 100, 1,000 and 10,000 USDC for both NVIDIA wrappers.
 - [x] Final 10,000-USDC round closely timed with fee excerpts preserved.
 - [x] Backpack candidates set aside after three zero-supply observations.
+- [x] NVDA, TSLA, and SPY xStocks/Ondo mappings independently reverified from current issuer sources.
+- [x] All six current Solana mints verified as initialized, unpaused Token-2022 mints with matching metadata, expected 8/9 decimals, and Scaled UI state at confirmed slot `448126418`.
+- [x] Multi-asset streaming scan, progress, failure isolation, ranking, per-asset detail, and 30-second freshness implemented.
 
 Findings are in [VERIFIED-FINDINGS.md](VERIFIED-FINDINGS.md); they are not runtime constants or completed application features.
 
@@ -44,7 +47,7 @@ Record/upload the scripted demo, then register and submit the repository, `https
 | Deployment/domain | Production deployment verified at `https://stoxroute.vercel.app`; execution config is persisted as `false` across Vercel environments |
 | Jupiter credentials | No key configured; walletless spike worked, but managed execution currently requires a server-side key |
 | RPC setup | Public mainnet RPC worked for user; deployment provider unknown |
-| Current full mint owners/extensions | Runtime validates both as Token-2022 mints with matching decimals, metadata, a single Scaled UI config, initialized/unpaused state, and shared-slot chain time |
+| Current full mint owners/extensions | Runtime validates every pair as Token-2022 mints with matching decimals/metadata, one Scaled UI config, initialized/unpaused state, coherent pair slot, and plausible chain time |
 | Execution eligibility | Independent eligible tester not identified |
 | Transaction construction/simulation/signing/receipt | Infrastructure and fixture tests complete; no live taker order, wallet action, submission, or receipt verified |
 | Hackathon registration/submission | Not verified |
@@ -134,3 +137,14 @@ Append a concise note and update phase/checklists/next task above:
 - Browser verification: the public 1,000-USDC walletless comparison completed with a fresh complete pair, estimate/restriction copy visible, purchasing labeled unavailable, and no browser warning/error logs.
 - Transaction truth: no transaction was prepared, signed, submitted, or confirmed.
 - Exact next task: Trevor records/uploads the prepared demo and submits the repository, deployment, and video links.
+
+### 2026-09-18 12:08 Eastern — multi-asset scanner working tree
+
+- Implemented: validated NVDA/TSLA/SPY issuer-pair registry; generic coherent mint-state and quote-round engine; explicit live/cached normalization provenance; implausible chain-time rejection; sequential bounded scanning with concurrent within-pair quotes; one whole-pair 429 retry; streamed progress; per-asset failure isolation; exact bps/dollar sorting; ranked Opportunity Board; selected-asset detail; 30-second display window; amount accessibility/tap-target improvements; registry/source documentation; updated metadata and submission script.
+- Checks run and actual results: `npm run typecheck` passed; `npm run lint` passed; `npm test` passed 55/55 across 12 files; `npm run build` passed with `/api/opportunities` dynamic; `git diff --check` passed; secret-pattern scan found no match and no real environment/key file is tracked (`.env.example` is intentional). `npm audit --omit=dev` reports 12 moderate transitive Solana-stack advisories, 0 high/critical, and no available compatible fix.
+- Browser evidence: 1440×1000 and exact 390×844 live scans showed three rows, correct ranking/near-tie labels, no horizontal overflow, 44px minimum preset targets, visible restrictions, and `Tester required / Execution unavailable`. Invalid amount semantics and board-row selection were exercised. Browser console output was empty.
+- Live evidence: issuer registries and all six mints were refreshed on 2026-09-18. Walletless scans returned complete current NVDA and TSLA pairs. Repeated keyless Jupiter throttling left SPY visibly unavailable after the single bounded retry; it was not ranked and no fixture replaced it.
+- Blocked/unverified: reliable shared-demo Jupiter/RPC credentials, live SPY completion under current keyless throttling, semantic transaction-flow audit items, eligible tester transaction, uploaded demo, and hackathon submission confirmation.
+- Decisions changed: D018 records the bounded verified scanner, explicit failure isolation, and unchanged execution boundary.
+- Transaction truth: execution stayed server-disabled. No taker order or transaction was prepared, signed, submitted, or confirmed.
+- Exact next task: deploy the fully verified scanner with `EXECUTION_ENABLED=false`, verify the public endpoint, then record/upload and submit the updated demo.
