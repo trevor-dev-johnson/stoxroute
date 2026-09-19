@@ -1,10 +1,10 @@
 # StoxRoute current status
 
-Last updated: **2026-09-18 12:08 Eastern**, after multi-asset scanner implementation and local verification.
+Last updated: **2026-09-18 17:38 Eastern**, after multi-asset scanner production deployment and public verification.
 
 ## Phase
 
-**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled. The walletless product is now a verified three-asset Opportunity Board with selected-asset detail. M4 submission assets are updated and the full local release suite passes.** Production redeployment of this scanner, demo recording, hackathon form submission, and live tester execution are not complete at this timestamp.
+**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled. The walletless three-asset Opportunity Board is deployed and publicly verified with selected-asset detail, streamed progress, ranked complete pairs, and isolated provider failures. M4 submission assets and the full local release suite are current.** Demo recording, hackathon form submission, and live tester execution are not complete at this timestamp.
 
 Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **2026-09-18 16:00 Eastern / 20:00 UTC**. Main track only.
 
@@ -42,7 +42,7 @@ Record/upload the scripted demo, then register and submit the repository, `https
 
 | Item | Current truth |
 |---|---|
-| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; security/deployment update pending final commit at this timestamp |
+| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; scanner release `d8ca5cf` was independently confirmed on `origin/main` and deployed before this status-only release update |
 | Framework/dependency versions/commands | Node 24.13.1, npm 11.8.0, Next 16.3.5, React 19.2.8; commands in README/package.json |
 | Deployment/domain | Production deployment verified at `https://stoxroute.vercel.app`; execution config is persisted as `false` across Vercel environments |
 | Jupiter credentials | No key configured; walletless spike worked, but managed execution currently requires a server-side key |
@@ -51,7 +51,7 @@ Record/upload the scripted demo, then register and submit the repository, `https
 | Execution eligibility | Independent eligible tester not identified |
 | Transaction construction/simulation/signing/receipt | Infrastructure and fixture tests complete; no live taker order, wallet action, submission, or receipt verified |
 | Hackathon registration/submission | Not verified |
-| Optional Tesla/SPY | Discovery only; remaining checks listed in findings |
+| Tesla/SPY scanner support | Registry, mint-state validation, live quote scanning, ranking, and failure isolation are implemented; SPY can remain unavailable under keyless Jupiter throttling and is never ranked without a complete pair |
 
 ## Security review summary
 
@@ -148,3 +148,14 @@ Append a concise note and update phase/checklists/next task above:
 - Decisions changed: D018 records the bounded verified scanner, explicit failure isolation, and unchanged execution boundary.
 - Transaction truth: execution stayed server-disabled. No taker order or transaction was prepared, signed, submitted, or confirmed.
 - Exact next task: deploy the fully verified scanner with `EXECUTION_ENABLED=false`, verify the public endpoint, then record/upload and submit the updated demo.
+
+### 2026-09-18 17:38 Eastern — public multi-asset release verification
+
+- Deployment: independently refreshed GitHub and confirmed `main`, `origin/main`, and GitHub `refs/heads/main` at `d8ca5cfeb125e86b32da08f5436ca9379a713283`. Vercel initially still served the older `1dd7602` NVIDIA-only release. The clean `d8ca5cf` checkout was deployed to production as `dpl_HTabLon9hsmAYoNzJKnuAB68q4Xh`, reached `READY`, and was promoted to the existing `stoxroute.vercel.app` alias without changing project protection or execution settings.
+- Checks run and actual results: `npm run typecheck` passed; `npm run lint` passed; `npm test -- --run` passed 55/55 across 12 files; `npm run build` passed; `npm audit --omit=dev --audit-level=high` reported 0 high/critical and the existing 12 moderate transitive Solana-stack advisories. The production environment was checked without printing secrets and retained `EXECUTION_ENABLED=false`.
+- Public/API evidence: unauthenticated `/` returned HTTP 200 with the multi-asset scanner title and NVDA/TSLA/SPY; `/api/opportunities` returned HTTP 200 `application/x-ndjson` with `start`, three streamed asset events, and `complete`; complete NVDA/TSLA rows were ranked by descending bps while a keyless-provider SPY failure remained visible and unranked. `/api/execution/status` returned `enabled:false`, `configured:false`, `allowlistConfigured:false`, and `testerRequired:true`; a direct challenge request returned HTTP 403 before any order preparation.
+- Browser/security evidence: the public UI exposed the walletless scanner, visible estimate/restriction copy, and disabled supervised execution. The live board completed with two ranked rows and one unavailable row; browser warning/error logs were empty. CSP, HSTS, `DENY` anti-framing, `nosniff`, strict referrer policy, restricted permissions policy, and `same-origin-allow-popups` were present. The browser-smoke helper now waits for the actual scan control and completion instead of assuming a fixed production load delay.
+- Transaction truth: execution remained server-disabled. No taker order or transaction was prepared, signed, submitted, or confirmed.
+- Blocked/unverified: a dependable authenticated Jupiter/RPC setup for every demo scan, eligible tester transaction evidence, uploaded demo, and hackathon submission confirmation.
+- Decisions changed: none.
+- Exact next task: Trevor records/uploads the prepared demo and completes the submission form with the repository and public deployment links.

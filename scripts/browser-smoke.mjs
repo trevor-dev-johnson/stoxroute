@@ -4,8 +4,9 @@ const height = Number(heightInput);
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const tabs = await fetch(`http://127.0.0.1:${port}/json`).then((response) => response.json());
-if (!tabs[0]?.webSocketDebuggerUrl) throw new Error("No debuggable Chrome tab was found");
-const socket = new WebSocket(tabs[0].webSocketDebuggerUrl);
+const page = tabs.find((target) => target.type === "page" && target.webSocketDebuggerUrl);
+if (!page) throw new Error("No debuggable Chrome page was found");
+const socket = new WebSocket(page.webSocketDebuggerUrl);
 await new Promise((resolve, reject) => {
   socket.onopen = resolve;
   socket.onerror = reject;
@@ -35,11 +36,20 @@ async function evaluate(expression) {
 
 await call("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: width <= 720 });
 await call("Page.navigate", { url });
-await wait(1_500);
+for (let attempt = 0; attempt < 80; attempt += 1) {
+  if (await evaluate("Boolean(document.querySelector('.compare-button'))")) break;
+  await wait(250);
+}
+if (!await evaluate("Boolean(document.querySelector('.compare-button'))")) {
+  throw new Error("The scan control did not become available");
+}
 await evaluate("document.querySelector('.compare-button')?.click()");
-for (let attempt = 0; attempt < 40; attempt += 1) {
+for (let attempt = 0; attempt < 120; attempt += 1) {
   if (await evaluate("Boolean(document.querySelector('.board-summary'))")) break;
   await wait(500);
+}
+if (!await evaluate("Boolean(document.querySelector('.board-summary'))")) {
+  throw new Error("The opportunity scan did not complete");
 }
 
 const report = await evaluate(`JSON.stringify({
