@@ -1,10 +1,10 @@
 # StoxRoute
 
-**One budget. Every verified pair.**
+**Choose the asset. Compare every verified route.**
 
 **Live demo:** [stoxroute.vercel.app](https://stoxroute.vercel.app)
 
-StoxRoute scans live Jupiter routes for verified NVIDIA, Tesla, and SPY issuer pairs using the same exact USDC input. It normalizes every output with current Token-2022 Scaled UI state, ranks complete pairs by relative exposure advantage, and keeps partial failures visible. The scanner works without a wallet.
+StoxRoute lets a user choose NVIDIA, Tesla, or SPY and compare the verified issuer routes for one exact USDC input. It normalizes every output with current Token-2022 Scaled UI state and explains the exposure and quote-implied value difference. The comparison works without a wallet; a bounded multi-asset scanner remains available as a secondary view.
 
 ![StoxRoute desktop scanner](docs/screenshots/stoxroute-desktop.png)
 
@@ -14,7 +14,7 @@ Tokenized representations of the same stock or ETF can use different decimals, m
 
 ## The solution
 
-StoxRoute gives every supported issuer pair one equal USDC budget, reads each pair from coherent Solana state, and fetches both routes together. The Opportunity Board ranks only complete, fresh comparisons and shows the leading issuer, both normalized exposures, absolute difference, relative basis-point difference, quote-implied dollar difference, routers, availability, and age.
+StoxRoute searches only its verified registry, gives the selected issuer pair one equal USDC budget, reads the pair from coherent Solana state, and fetches both routes together. A complete fresh result shows the leading issuer, both normalized exposures, absolute difference, relative basis-point difference, quote-implied dollar difference, routers, availability, and age. The optional Opportunity Board repeats the same contract across the bounded registry and ranks only complete pairs.
 
 The bounded production registry contains:
 
@@ -36,18 +36,18 @@ Exact issuer sources and live-mint verification are in [docs/ASSET-REGISTRY.md](
 - Existing per-asset `/api/quotes` support for every registry ticker.
 - Wallet Standard discovery through Solana Wallet Adapter, including Phantom when installed.
 - Server-disabled execution infrastructure with wallet proof, optional allowlist, fresh taker order, signed intent binding, decoded transaction validation, simulation, and confirmed-chain receipt accounting.
-- 55 domain, registry, scanner, accessibility, HTTP-boundary, and execution-boundary tests.
+- 57 domain, registry, asset-search, scanner, accessibility, HTTP-boundary, and execution-boundary tests.
 
 No live transaction has been prepared, signed, submitted, or confirmed during the scanner work. Execution remains disabled pending separate semantic validation and independently eligible tester verification.
 
 ## Product walkthrough
 
 1. Open the app without connecting a wallet.
-2. Choose a preset or enter one exact USDC budget.
-3. Select **Scan opportunities**. Progress updates as the bounded three-asset registry is scanned.
-4. Sort the Opportunity Board by basis-point or quote-implied dollar advantage. Complete pairs rank first; partial and unavailable rows remain visible but unranked.
-5. Select an asset row to open its detailed side-by-side issuer comparison.
-6. Expand **Instrument details** to inspect the ISIN, mint, raw output, multiplier, cache status, router, fees, and quote time.
+2. Search by ticker/company name or choose a curated featured market.
+3. Choose a preset or enter one exact USDC budget, then select **Compare routes**.
+4. Read the side-by-side issuer result and the fresh complete-pair verdict. Expand **Instrument details** to inspect the ISIN, mint, raw output, multiplier, cache status, router, fees, and quote time.
+5. Optionally select **Scan all supported markets** to stream the bounded Opportunity Board. Complete pairs rank first; partial and unavailable rows remain visible but unranked.
+6. Select a board row to bring that market back into the primary comparison workspace.
 
 Each result has a 30-second reading window. Run a fresh scan before relying on an expired result.
 

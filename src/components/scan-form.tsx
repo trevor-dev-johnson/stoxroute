@@ -1,27 +1,32 @@
 import type { FormEvent } from "react";
+import type { SupportedAsset } from "@/lib/stocks/registry";
 
 export const AMOUNT_PRESETS = ["100", "1000", "10000"] as const;
 
 export function ScanForm({
   amount,
+  asset,
   loading,
   invalidMessage,
   onAmountChange,
   onPreset,
+  onAmountBlur,
   onSubmit,
 }: {
   amount: string;
+  asset: SupportedAsset | null;
   loading: boolean;
   invalidMessage: string | null;
   onAmountChange: (value: string) => void;
   onPreset: (value: string) => void;
+  onAmountBlur: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
     <form className="quote-form" onSubmit={onSubmit} noValidate>
       <div className="asset-line">
-        <div><span className="asset-symbol">3 pairs</span><span>NVDA · TSLA · SPY</span></div>
-        <span className="locked">Verified registry only</span>
+        <div><span className="asset-symbol">{asset?.ticker ?? "Select"}</span><span>{asset ? `${asset.underlyingName} · ${asset.candidates.map((candidate) => candidate.issuer).join(" + ")}` : "Choose a verified market above"}</span></div>
+        <span className="locked">{asset ? `${asset.instrumentType === "etf" ? "ETF" : "Stock"} · live pair supported` : "No route selected"}</span>
       </div>
       <label htmlFor="amount">USDC budget</label>
       <div className="amount-row">
@@ -32,13 +37,14 @@ export function ScanForm({
             name="amount"
             value={amount}
             onChange={(event) => onAmountChange(event.target.value)}
+            onBlur={onAmountBlur}
             inputMode="decimal"
             aria-invalid={Boolean(invalidMessage)}
             aria-describedby={invalidMessage ? "amount-help amount-error" : "amount-help"}
           />
         </div>
-        <button className="compare-button" type="submit" disabled={loading}>
-          {loading ? "Scanning…" : "Scan opportunities"}<span aria-hidden>→</span>
+        <button className="compare-button" type="submit" disabled={loading || !asset}>
+          {loading ? "Comparing…" : "Compare routes"}<span aria-hidden>→</span>
         </button>
       </div>
       <div className="preset-row" id="amount-help">

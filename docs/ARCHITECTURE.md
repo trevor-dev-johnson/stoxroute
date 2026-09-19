@@ -1,6 +1,6 @@
 # Architecture and comparison contract
 
-Updated: 2026-09-18. This document describes the implemented walletless scanner contract and the separately gated execution boundary.
+Updated: 2026-09-19. This document describes the implemented asset-first walletless comparison, secondary scanner contract, and separately gated execution boundary.
 
 ## Stack
 
@@ -24,7 +24,7 @@ Keep any compatible existing versions. On a new app, choose a mutually supported
 
 | Suggested path | Responsibility |
 |---|---|
-| `src/app/page.tsx` | Opportunity Board plus selected-asset detail |
+| `src/app/page.tsx` | Asset search/selection, one-market comparison, and secondary Opportunity Board |
 | `src/app/api/opportunities/route.ts` | Stream bounded scan progress and isolated asset results |
 | `src/app/api/quotes/route.ts` | Validate supported ticker/input and return normalized quote round |
 | `src/app/api/order/route.ts` | Gated, fresh transaction preparation |
@@ -36,6 +36,7 @@ Keep any compatible existing versions. On a new app, choose a mutually supported
 | `src/lib/routing/normalize.ts` | Base units → token units → share-equivalent exposure |
 | `src/lib/routing/compare.ts` | Comparable-round checks and deterministic ranking |
 | `src/lib/routing/opportunities.ts` | Concurrency control, failure isolation, dollar calculation, and board sorting |
+| `src/lib/ui/asset-search.ts` | Registry-bounded ticker and company-name search |
 | `src/lib/routing/fees.ts` | Quoted cost interpretation and explicit unknowns |
 | `src/lib/execution/` | Gating, transaction intent binding, signing payload, confirmation |
 | `tests/` | Domain, failure and execution-boundary tests |

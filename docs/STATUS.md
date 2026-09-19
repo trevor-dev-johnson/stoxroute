@@ -1,10 +1,10 @@
 # StoxRoute current status
 
-Last updated: **2026-09-18 17:38 Eastern**, after multi-asset scanner production deployment and public verification.
+Last updated: **2026-09-19 10:18 Eastern**, after local asset-first information-architecture redesign and verification.
 
 ## Phase
 
-**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled. The walletless three-asset Opportunity Board is deployed and publicly verified with selected-asset detail, streamed progress, ranked complete pairs, and isolated provider failures. M4 submission assets and the full local release suite are current.** Demo recording, hackathon form submission, and live tester execution are not complete at this timestamp.
+**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled. The local working tree now leads with a walletless selected-asset comparison and retains the three-asset Opportunity Board as a secondary streamed scan. The redesign is fully verified locally but is not yet committed, pushed, or deployed; production still serves the preceding scanner-first release.** Demo recording, hackathon form submission, and live tester execution are not complete at this timestamp.
 
 Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **2026-09-18 16:00 Eastern / 20:00 UTC**. Main track only.
 
@@ -36,13 +36,13 @@ Findings are in [VERIFIED-FINDINGS.md](VERIFIED-FINDINGS.md); they are not runti
 
 ## Next task — requires Trevor
 
-Record/upload the scripted demo, then register and submit the repository, `https://stoxroute.vercel.app`, and video links before the conservative September 18 deadline.
+Review and commit the verified asset-first redesign, push `main`, then verify the resulting Vercel production deployment before recording an updated demo.
 
 ## Unknowns and blockers
 
 | Item | Current truth |
 |---|---|
-| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; scanner release `d8ca5cf` was independently confirmed on `origin/main` and deployed before this status-only release update |
+| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; local `HEAD` and `origin/main` are `a2b57e0`; the asset-first redesign is an intentional uncommitted working tree for Trevor to review and push |
 | Framework/dependency versions/commands | Node 24.13.1, npm 11.8.0, Next 16.3.5, React 19.2.8; commands in README/package.json |
 | Deployment/domain | Production deployment verified at `https://stoxroute.vercel.app`; execution config is persisted as `false` across Vercel environments |
 | Jupiter credentials | No key configured; walletless spike worked, but managed execution currently requires a server-side key |
@@ -159,3 +159,13 @@ Append a concise note and update phase/checklists/next task above:
 - Blocked/unverified: a dependable authenticated Jupiter/RPC setup for every demo scan, eligible tester transaction evidence, uploaded demo, and hackathon submission confirmation.
 - Decisions changed: none.
 - Exact next task: Trevor records/uploads the prepared demo and completes the submission form with the repository and public deployment links.
+
+### 2026-09-19 10:18 Eastern — asset-first redesign working tree
+
+- Implemented: asset-first hero and comparison workspace; accessible ticker/company combobox; curated featured-market shortcuts; explicit selection before quote requests; amount/asset request invalidation; one-market fresh/partial/stale/error presentation; secondary streamed Opportunity Board; more legible operational and restriction copy; responsive mobile market strip; updated metadata, browser-smoke helper, architecture, decision log, and README.
+- Checks run and actual results: `npm run typecheck` passed; `npm run lint` passed; `npm test` passed 57/57 across 13 files; `npm run build` passed with the existing static/dynamic route split; `git diff --check` passed with only expected Git line-ending notices.
+- Browser evidence: keyboard company-name search selected Tesla and cleared the prior NVIDIA round; editing the selection to an unsupported company removed the selection and disabled comparison; fresh Tesla comparison returned a complete two-route verdict; the result aged into the explicit stale state; the optional scan streamed three rows with one complete pair and two isolated provider failures left visible and unranked. Desktop and 390×844 checks had no page-level horizontal overflow, the mobile comparison button remained 55px high, the completed production-build browser error/warning log was empty, and execution displayed `Tester required` / `Execution unavailable`. Two development-only promise entries appeared while Turbopack hot-reloaded files; neither reproduced against the production build.
+- Live evidence: local walletless provider calls only. `/api/execution/status` returned `enabled:false`, `configured:false`, `allowlistConfigured:false`, and `testerRequired:true`. No order or transaction was prepared, signed, submitted, or confirmed.
+- Blocked/unverified: the local redesign has not been committed, pushed, deployed, or production-smoked. Provider throttling can still produce honest unavailable scanner rows.
+- Decisions changed: D019 makes selected-asset comparison primary and retains D018 scanning as secondary; backend, registry, arithmetic, Jupiter, and execution contracts are unchanged.
+- Exact next task: Trevor reviews, commits, and pushes this working tree; then verify the automatic Vercel deployment before recording the updated demo.

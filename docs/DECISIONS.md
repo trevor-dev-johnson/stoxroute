@@ -175,3 +175,13 @@ This is an append-only record of decisions that would otherwise get relitigated 
 **Consequence:** The primary workflow is one budget to a ranked Opportunity Board, with the existing per-asset detail preserved. The display window is 30 seconds, cached mint state is labeled, quote-implied dollar differences remain estimates, and all expanded routes remain walletless while execution stays server-disabled.
 
 **Supersedes:** D010 only as the walletless comparison scope; it does not broaden the NVIDIA-only execution allowlist.
+
+## 2026-09-19 — D019: Make a selected asset the primary workflow
+
+**Decision:** Lead with registry-bounded ticker/company search, a curated featured-market shortcut, and one exact-USDC comparison for the selected asset. Keep the three-asset Opportunity Board as an explicit secondary scan.
+
+**Reason:** A user should be able to answer “which route is better for the stock I want?” without first interpreting a market-wide ranking. The scan remains useful for discovery but is not the clearest entry point.
+
+**Consequence:** No quote runs until a supported asset is chosen and submitted. Changing the asset or amount clears and aborts the prior comparison. Only a complete fresh pair can show a leading route or become an execution candidate; partial, stale, and provider-error states retain their existing semantics. Featured markets are curated registry shortcuts, not popularity or investment rankings.
+
+**Clarifies:** D016 and D018. The API, normalization, Jupiter, wallet, and server-disabled execution boundaries are unchanged.
