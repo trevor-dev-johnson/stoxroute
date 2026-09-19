@@ -45,7 +45,7 @@ Match existing directories if already established. This is not permission to rew
 
 ## Registry
 
-The runtime registry contains three independently reverified pairs: NVIDIA (NVDAx/NVDAon), Tesla (TSLAx/TSLAon), and SPDR S&P 500 ETF (SPYx/SPYon). Every pair has the same issuer-declared underlying ISIN. Exact issuer sources and the 2026-09-18 live mint verification are recorded in [ASSET-REGISTRY.md](ASSET-REGISTRY.md).
+The runtime registry contains nine independently verified xStocks/Ondo pairs: NVDA, TSLA, SPY, AAPL, MSFT, META, AMZN, GOOGL, and QQQ. Every pair has the same issuer-declared underlying ISIN; ticker agreement alone is insufficient. Exact issuer sources, current mints, live mint-state evidence, quote evidence, and excluded candidates are recorded in [ASSET-REGISTRY.md](ASSET-REGISTRY.md). The repeatable verifier is `scripts/verify-asset-registry.mjs`.
 
 Registry fields include underlying ticker/name/ISIN and instrument type, issuer, token symbol, mint, expected decimals, official source, and verification date. Module-load validation rejects duplicate tickers, symbols or mints, duplicate issuers inside a pair, candidate/asset identity mismatches, and incomplete pairs. Execution eligibility remains separate from comparison availability; the expanded assets are walletless comparison routes only.
 

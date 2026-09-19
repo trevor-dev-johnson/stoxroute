@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Decimal from "decimal.js";
-import { WalletControl } from "@/components/wallet-control";
-import { ExecutionPanel } from "@/components/execution-panel";
 import { ScanForm } from "@/components/scan-form";
 import type { AssetOpportunity, OpportunityScan } from "@/lib/routing/opportunities";
 import { quoteImpliedDollarAdvantage, sortOpportunities } from "@/lib/routing/opportunities";
@@ -18,6 +16,8 @@ type StreamEvent =
   | { type: "asset"; completed: number; total: number; opportunity: AssetOpportunity }
   | { type: "complete"; scan: OpportunityScan }
   | { type: "error"; message: string };
+
+const FEATURED_ASSETS = SUPPORTED_ASSETS.filter((asset) => ["NVDA", "AAPL", "MSFT"].includes(asset.ticker));
 
 function compact(value: string, places = 8) {
   try {
@@ -60,7 +60,7 @@ function AssetSelector({ query, selected, onQueryChange, onSelect }: { query: st
     <label htmlFor="asset-search">Choose a stock or ETF</label>
     <div className={`asset-combobox ${open ? "asset-combobox--open" : ""}`}>
       <span className="asset-combobox__search" aria-hidden>⌕</span>
-      <input id="asset-search" role="combobox" aria-autocomplete="list" aria-controls="asset-options" aria-expanded={open} aria-activedescendant={open && filtered[activeIndex] ? `asset-option-${filtered[activeIndex].ticker}` : undefined} value={query} placeholder="Search NVDA, Tesla, SPY…" onFocus={() => setOpen(true)} onChange={(event) => { onQueryChange(event.target.value); setOpen(true); setActiveIndex(0); }} onKeyDown={(event) => {
+      <input id="asset-search" role="combobox" aria-autocomplete="list" aria-controls="asset-options" aria-expanded={open} aria-activedescendant={open && filtered[activeIndex] ? `asset-option-${filtered[activeIndex].ticker}` : undefined} value={query} placeholder="Search NVDA, Apple, QQQ…" onFocus={() => setOpen(true)} onChange={(event) => { onQueryChange(event.target.value); setOpen(true); setActiveIndex(0); }} onKeyDown={(event) => {
         if (event.key === "ArrowDown") { event.preventDefault(); setOpen(true); setActiveIndex((index) => Math.min(index + 1, Math.max(filtered.length - 1, 0))); }
         if (event.key === "ArrowUp") { event.preventDefault(); setActiveIndex((index) => Math.max(index - 1, 0)); }
         if (event.key === "Enter" && open && filtered[activeIndex]) { event.preventDefault(); choose(filtered[activeIndex]); }
@@ -77,7 +77,7 @@ function AssetSelector({ query, selected, onQueryChange, onSelect }: { query: st
   </div>;
 }
 
-function CandidateView({ candidate, round, winner, stale, selected, reviewDisabled, onReview }: { candidate: ComparisonRound["candidates"][number]; round: ComparisonRound; winner: boolean; stale: boolean; selected: boolean; reviewDisabled: boolean; onReview: (candidate: AvailableCandidate) => void }) {
+function CandidateView({ candidate, round, winner, stale }: { candidate: ComparisonRound["candidates"][number]; round: ComparisonRound; winner: boolean; stale: boolean }) {
   const available = candidate.status === "available";
   const failureLabel = candidate.status !== "available" && candidate.failure.code === "rate_limited" ? "rate limited" : "unavailable";
   return <article className={`route ${winner && !stale ? "route--winner" : ""}`} aria-label={`${candidate.issuer} ${candidate.symbol}`}>
@@ -85,9 +85,8 @@ function CandidateView({ candidate, round, winner, stale, selected, reviewDisabl
     {available ? <>
       <div className="route__number"><span>{compact(candidate.exposure)}</span><small>{exposureLabel(round)}</small></div>
       <dl className="route__metrics"><div><dt>Quote-based unit cost</dt><dd>{money(candidate.usdcPerShareEquivalent, 4)}</dd></div><div><dt>Router</dt><dd>{candidate.router}</dd></div><div><dt>Quoted fee</dt><dd>{candidate.fees.feeBps === undefined ? "Not supplied" : `${candidate.fees.feeBps} bps · included`}</dd></div><div><dt>Availability</dt><dd>{stale ? "Refresh required" : "Current quote"}</dd></div></dl>
-      <details><summary>Route and instrument details</summary><dl className="details-grid"><div><dt>Underlying ISIN</dt><dd>{candidate.underlyingIsin}</dd></div><div><dt>Mint</dt><dd><a href={`https://solscan.io/token/${candidate.mint}`} target="_blank" rel="noreferrer">{shortMint(candidate.mint)} ↗</a></dd></div><div><dt>Raw output</dt><dd>{candidate.rawOutAmount}</dd></div><div><dt>Decimals</dt><dd>{candidate.decimals}</dd></div><div><dt>Active multiplier</dt><dd>{candidate.multiplier}</dd></div><div><dt>Mint slot</dt><dd>{candidate.mintSlot.toLocaleString()}</dd></div><div><dt>Normalization state</dt><dd>{candidate.normalizationCacheStatus} · {new Date(candidate.normalizationFetchedAt).toLocaleTimeString()}</dd></div><div><dt>Minimum exposure</dt><dd>{candidate.minimumExposure ? compact(candidate.minimumExposure) : "Not supplied"}</dd></div><div><dt>Gasless quote</dt><dd>{candidate.fees.gasless === undefined ? "Not supplied" : candidate.fees.gasless ? "Yes" : "No"}</dd></div><div><dt>Quote finished</dt><dd>{new Date(candidate.quoteFinishedAt).toLocaleTimeString()}</dd></div></dl></details>
-      <button className={`route__review ${selected ? "route__review--selected" : ""}`} type="button" disabled={reviewDisabled} onClick={() => onReview(candidate)}>{reviewDisabled ? "Complete fresh pair required" : selected ? "Selected for review" : `Review ${candidate.symbol}`}</button>
-    </> : <div className="route__failure"><span aria-hidden>—</span><p>{candidate.failure.message}</p><small>This issuer is {failureLabel}. A complete pair is required before StoxRoute can name a winner or open execution review.</small></div>}
+      <details><summary>View route details</summary><dl className="details-grid"><div><dt>Underlying ISIN</dt><dd>{candidate.underlyingIsin}</dd></div><div><dt>Mint</dt><dd><a href={`https://solscan.io/token/${candidate.mint}`} target="_blank" rel="noreferrer">{shortMint(candidate.mint)} ↗</a></dd></div><div><dt>Raw output</dt><dd>{candidate.rawOutAmount}</dd></div><div><dt>Decimals</dt><dd>{candidate.decimals}</dd></div><div><dt>Active multiplier</dt><dd>{candidate.multiplier}</dd></div><div><dt>Mint slot</dt><dd>{candidate.mintSlot.toLocaleString()}</dd></div><div><dt>Normalization state</dt><dd>{candidate.normalizationCacheStatus} · {new Date(candidate.normalizationFetchedAt).toLocaleTimeString()}</dd></div><div><dt>Minimum exposure</dt><dd>{candidate.minimumExposure ? compact(candidate.minimumExposure) : "Not supplied"}</dd></div><div><dt>Gasless quote</dt><dd>{candidate.fees.gasless === undefined ? "Not supplied" : candidate.fees.gasless ? "Yes" : "No"}</dd></div><div><dt>Quote finished</dt><dd>{new Date(candidate.quoteFinishedAt).toLocaleTimeString()}</dd></div></dl></details>
+    </> : <div className="route__failure"><span aria-hidden>—</span><p>{candidate.failure.message}</p><small>This issuer is {failureLabel}. A complete pair is required before StoxRoute can name a winner.</small></div>}
   </article>;
 }
 
@@ -106,7 +105,6 @@ export default function Home() {
   const [assetQuery, setAssetQuery] = useState("");
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
   const [round, setRound] = useState<ComparisonRound | null>(null);
-  const [selectedMint, setSelectedMint] = useState<string | null>(null);
   const [comparisonLoading, setComparisonLoading] = useState(false);
   const [comparisonError, setComparisonError] = useState<string | null>(null);
   const [amountError, setAmountError] = useState<string | null>(null);
@@ -130,10 +128,9 @@ export default function Home() {
   const age = round ? Math.max(0, Math.floor((clock - Date.parse(round.createdAt)) / 1_000)) : 0;
   const secondsLeft = round ? Math.max(0, Math.ceil((Date.parse(round.displayExpiresAt) - clock) / 1_000)) : 0;
   const availableCount = round?.candidates.filter((candidate) => candidate.status === "available").length ?? 0;
-  const selectedCandidate = round?.comparison && !stale ? round.candidates.find((candidate): candidate is AvailableCandidate => candidate.status === "available" && candidate.mint === selectedMint) ?? null : null;
   const selectedValue = round ? quoteImpliedDollarAdvantage(round) : null;
 
-  function clearComparison() { comparisonRequest.current?.abort(); comparisonRequest.current = null; comparisonSequence.current += 1; setRound(null); setSelectedMint(null); setComparisonError(null); setComparisonLoading(false); }
+  function clearComparison() { comparisonRequest.current?.abort(); comparisonRequest.current = null; comparisonSequence.current += 1; setRound(null); setComparisonError(null); setComparisonLoading(false); }
   function selectAsset(asset: SupportedAsset) { if (asset.ticker !== selectedTicker) clearComparison(); setSelectedTicker(asset.ticker); setAssetQuery(assetSearchLabel(asset)); setAmountError(null); }
   function changeAssetQuery(value: string) { if (selectedAsset && value !== assetSearchLabel(selectedAsset)) { clearComparison(); setSelectedTicker(null); setAmountError(null); } setAssetQuery(value); }
   function changeAmount(value: string) { setAmount(value.replace(/[^\d.,]/g, "")); setAmountError(null); clearComparison(); }
@@ -141,7 +138,7 @@ export default function Home() {
   async function runComparison(event?: React.FormEvent<HTMLFormElement>) {
     event?.preventDefault(); const invalid = validAmount(amount); setAmountError(invalid); if (!selectedAsset || invalid) return;
     const requestedUsdc = canonicalAmount(amount); const sequence = ++comparisonSequence.current; comparisonRequest.current?.abort(); const controller = new AbortController(); comparisonRequest.current = controller;
-    setComparisonLoading(true); setComparisonError(null); setSelectedMint(null);
+    setComparisonLoading(true); setComparisonError(null);
     try {
       const response = await fetch("/api/quotes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ticker: selectedAsset.ticker, amount: requestedUsdc }), signal: controller.signal });
       const payload = await response.json(); if (!response.ok) throw new Error(payload.message ?? "Live comparison failed"); if (sequence !== comparisonSequence.current) return;
@@ -171,7 +168,7 @@ export default function Home() {
 
   function openOpportunity(opportunity: AssetOpportunity) {
     const asset = assetForTicker(opportunity.ticker); if (!asset) return;
-    setSelectedTicker(asset.ticker); setAssetQuery(assetSearchLabel(asset)); setAmount(formattedAmount(opportunity.round?.requestedUsdc ?? amount)); setRound(opportunity.round); setSelectedMint(null); setComparisonError(null);
+    setSelectedTicker(asset.ticker); setAssetQuery(assetSearchLabel(asset)); setAmount(formattedAmount(opportunity.round?.requestedUsdc ?? amount)); setRound(opportunity.round); setComparisonError(null);
     setClock(Date.now());
     window.setTimeout(() => document.getElementById(opportunity.round ? "comparison-detail" : "comparison-form")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   }
@@ -184,12 +181,12 @@ export default function Home() {
   })();
 
   return <main>
-    <header className="topbar"><a className="brand" href="#top" aria-label="StoxRoute home"><span className="brand__mark">SR</span>StoxRoute</a><div className="topbar__actions"><div className="network"><span /> Solana mainnet</div><WalletControl /></div></header>
+    <header className="topbar"><a className="brand" href="#top" aria-label="StoxRoute home"><span className="brand__mark">SR</span>StoxRoute</a><div className="network"><span /> Solana mainnet</div></header>
     <section className="workspace" id="top">
       <div className="intro"><p className="eyebrow">Issuer-aware route comparison</p><h1>Compare tokenized<br />stock routes.</h1><p className="intro__copy">Choose a stock, set your USDC budget, and see which issuer delivers more normalized underlying exposure.</p></div>
       <section className="compare-workspace" id="comparison-form" aria-label="Compare tokenized stock routes">
         <AssetSelector query={assetQuery} selected={selectedAsset} onQueryChange={changeAssetQuery} onSelect={selectAsset} />
-        <div className="featured-markets"><div className="section-kicker"><span>Featured markets</span><small>Curated from the verified registry—not a popularity ranking.</small></div><div className="featured-markets__grid">{SUPPORTED_ASSETS.map((asset) => <button type="button" key={asset.ticker} className={selectedTicker === asset.ticker ? "featured-market featured-market--selected" : "featured-market"} onClick={() => selectAsset(asset)}><span className="featured-market__ticker">{asset.ticker}</span><span className="featured-market__identity"><strong>{asset.underlyingName}</strong><small>{asset.instrumentType === "etf" ? "ETF" : "Stock"} · 2 issuers</small></span><span className="featured-market__state">Supported</span></button>)}</div></div>
+        <div className="featured-markets"><div className="section-kicker"><span>Featured markets</span><small>Curated from the verified registry—not a popularity ranking.</small></div><div className="featured-markets__grid">{FEATURED_ASSETS.map((asset) => <button type="button" key={asset.ticker} className={selectedTicker === asset.ticker ? "featured-market featured-market--selected" : "featured-market"} onClick={() => selectAsset(asset)}><span className="featured-market__ticker">{asset.ticker}</span><span className="featured-market__identity"><strong>{asset.underlyingName}</strong><small>{asset.instrumentType === "etf" ? "ETF" : "Stock"} · 2 issuers</small></span><span className="featured-market__state">Supported</span></button>)}</div></div>
         <ScanForm amount={amount} asset={selectedAsset} loading={comparisonLoading} invalidMessage={amountError} onAmountChange={changeAmount} onAmountBlur={() => setAmount(formattedAmount(amount))} onPreset={(value) => changeAmount(formattedAmount(value))} onSubmit={runComparison} />
         <button className="scan-all-action" type="button" disabled={scanLoading} onClick={() => void runScan()}>{scanLoading ? "Scanning supported markets…" : "Scan all supported markets"}<span aria-hidden>↘</span></button>
       </section>
@@ -199,11 +196,10 @@ export default function Home() {
       {round && <section className={`results ${comparisonLoading ? "results--loading" : ""}`} id="comparison-detail" aria-busy={comparisonLoading}>
         {comparisonLoading && <div className="scanline"><span /></div>}
         <div className="results__head"><div><p className="eyebrow">{round.ticker} route comparison</p><h2>Which {round.underlyingName} token gives you more exposure?</h2><p className="results__definition">{budget(round.requestedUsdc)} input · Normalized exposure applies each mint’s current decimals and Token-2022 multiplier. It is a comparison unit—not legal stock ownership.</p></div><div className={`freshness ${stale ? "freshness--stale" : ""}`}><span />{stale ? "Stale · refresh required" : `${secondsLeft}s live · ${age}s old`}</div></div>
-        <div className="routes">{round.candidates.map((candidate) => <CandidateView key={candidate.symbol} candidate={candidate} round={round} stale={stale || comparisonLoading} winner={availableCount === 2 && round.comparison?.winnerSymbol === candidate.symbol} selected={selectedMint === candidate.mint} reviewDisabled={stale || comparisonLoading || !round.comparison} onReview={(candidateToReview) => { setSelectedMint(candidateToReview.mint); window.setTimeout(() => document.getElementById("execution")?.scrollIntoView({ behavior: "smooth" }), 0); }} />)}</div>
+        <div className="routes">{round.candidates.map((candidate) => <CandidateView key={candidate.symbol} candidate={candidate} round={round} stale={stale || comparisonLoading} winner={availableCount === 2 && round.comparison?.winnerSymbol === candidate.symbol} />)}</div>
         <div className={`verdict ${!round.comparison || stale ? "verdict--muted" : ""}`}><span className="verdict__glyph" aria-hidden>{round.comparison && !stale ? "↗" : "i"}</span><div><p className="eyebrow">{stale ? "Stale comparison" : round.comparison ? "Best quoted route" : "Complete pair required"}</p><strong>{stale ? "These quotes have passed the 30-second display window." : comparisonCopy ?? "One or both issuer routes are unavailable. No winner is declared."}</strong>{round.comparison && !stale ? <div className="verdict__facts"><span><b>+{compact(round.comparison.additionalExposure)}</b> normalized exposure</span><span><b>{selectedValue === null ? "—" : money(selectedValue)}</b> quote-implied difference</span><span><b>{compact(round.comparison.advantageBps, 3)} bps</b> relative advantage</span></div> : <p>Retry this asset without changing your selection or budget.</p>}<p>Estimates only. Issuer rights, liquidity, eligibility, jurisdiction, and final wallet costs can differ.</p></div><button type="button" onClick={() => void runComparison()} disabled={comparisonLoading}>{comparisonLoading ? "Refreshing…" : stale ? "Refresh comparison" : !round.comparison ? "Retry comparison" : "Refresh quotes"}</button></div>
       </section>}
-      <aside className="risk-note" aria-label="Tokenized asset limitations"><p className="eyebrow">Before any transaction</p><strong>Quotes estimate route output—not stock ownership, realized savings, or guaranteed execution.</strong><p>Tokenized assets can differ by issuer rights, liquidity, eligibility, transfer restrictions, and jurisdiction. StoxRoute compares normalized quote output; it does not recommend an issuer or determine whether you may acquire a token.</p></aside>
-      <ExecutionPanel key={`${round?.comparisonId ?? "none"}:${selectedMint ?? "none"}`} round={round} candidate={selectedCandidate} stale={stale || comparisonLoading || !round?.comparison} />
+      <aside className="risk-note" aria-label="Tokenized asset limitations"><p className="eyebrow">Important context</p><strong>Quotes estimate route output—not stock ownership or realized savings.</strong><p>Tokenized assets can differ by issuer rights, liquidity, eligibility, transfer restrictions, and jurisdiction. StoxRoute compares normalized quote output; it does not recommend an issuer or determine whether you may acquire a token.</p></aside>
       {showBoard && <section className={`opportunity-board ${scanLoading ? "opportunity-board--loading" : ""}`} id="market-scanner" aria-live="polite" aria-busy={scanLoading}>
         <div className="board-head"><div><p className="eyebrow">Secondary market scanner</p><h2>{scan ? `${budget(scan.requestedUsdc)} across ${scan.total} verified assets` : "Opportunity Board"}</h2><p>Rank complete issuer pairs across the registry. Partial and unavailable markets remain visible but unranked.</p></div><div className="board-controls" aria-label="Sort opportunity board"><button type="button" aria-pressed={sortMode === "bps"} onClick={() => setSortMode("bps")}>Basis points</button><button type="button" aria-pressed={sortMode === "dollars"} onClick={() => setSortMode("dollars")}>Dollar difference</button></div></div>
         {scanError && <div className="notice notice--error" role="alert"><div><strong>Scanner unavailable</strong><span>{scanError}</span></div><button type="button" onClick={() => void runScan()}>Retry scan</button></div>}
@@ -212,6 +208,6 @@ export default function Home() {
         {scan && <p className="board-summary">{scan.completeCount} complete · {scan.partialCount} partial · {scan.unavailableCount} unavailable. Only complete pairs are ranked.</p>}
       </section>}
     </section>
-    <footer><span>Search and comparison work without a wallet.</span><span>Purchasing unavailable while the supervised execution gate is disabled.</span><a href="https://github.com/trevor-dev-johnson/stoxroute" target="_blank" rel="noreferrer">GitHub ↗</a></footer>
+    <footer><span>Trading execution is not currently available.</span><a href="https://github.com/trevor-dev-johnson/stoxroute" target="_blank" rel="noreferrer">GitHub ↗</a></footer>
   </main>;
 }

@@ -29,12 +29,20 @@ export function sealEnvelope(payload: ChallengePayload | OrderIntent | ReceiptPa
 export function openEnvelope<T>(token: string, schema: z.ZodType<T>, secret: string, now = Date.now()): T {
   const parts = token.split(".");
   if (parts.length !== 2) throw new ExecutionError("intent_invalid", "The signed execution envelope is malformed.", 401);
+  if (!/^[A-Za-z0-9_-]+$/.test(parts[0]) || !/^[A-Za-z0-9_-]+$/.test(parts[1])) {
+    throw new ExecutionError("intent_invalid", "The signed execution envelope is malformed.", 401);
+  }
   const expected = mac(parts[0], secret);
   let supplied: Buffer;
   try { supplied = Buffer.from(parts[1], "base64url"); } catch { throw new ExecutionError("intent_invalid", "The signed execution envelope is malformed.", 401); }
+  if (supplied.toString("base64url") !== parts[1]) throw new ExecutionError("intent_invalid", "The signed execution envelope was altered.", 401);
   if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) throw new ExecutionError("intent_invalid", "The signed execution envelope was altered.", 401);
   let decoded: unknown;
-  try { decoded = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8")); } catch { throw new ExecutionError("intent_invalid", "The signed execution envelope is malformed.", 401); }
+  try {
+    const payload = Buffer.from(parts[0], "base64url");
+    if (payload.toString("base64url") !== parts[0]) throw new Error("Non-canonical base64url");
+    decoded = JSON.parse(payload.toString("utf8"));
+  } catch { throw new ExecutionError("intent_invalid", "The signed execution envelope is malformed.", 401); }
   const parsed = schema.safeParse(decoded);
   if (!parsed.success) throw new ExecutionError("intent_invalid", "The signed execution envelope is invalid.", 401);
   if ((parsed.data as { expiresAt: number }).expiresAt <= now) throw new ExecutionError("intent_expired", "The execution request expired. Prepare a fresh order.", 410);

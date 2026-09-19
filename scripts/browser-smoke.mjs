@@ -51,6 +51,12 @@ for (let attempt = 0; attempt < 80; attempt += 1) {
 if (!await evaluate("Boolean(document.querySelector('.compare-button'))")) {
   throw new Error("The comparison control did not become available");
 }
+if (await evaluate("Boolean(document.querySelector('.wallet-adapter-button, .execution-state, .execution__action'))")) {
+  throw new Error("Public transaction controls are still visible");
+}
+if (!await evaluate("document.body.innerText.includes('Trading execution is not currently available.')")) {
+  throw new Error("The restrained footer disclosure is missing");
+}
 await evaluate("document.querySelector('.featured-market')?.click()");
 if (await evaluate("Boolean(document.querySelector('.compare-button')?.disabled)")) {
   throw new Error("Selecting a featured market did not enable comparison");
@@ -63,12 +69,17 @@ for (let attempt = 0; attempt < 120; attempt += 1) {
 if (!await evaluate("Boolean(document.querySelector('.results'))")) {
   throw new Error(`The selected-market comparison did not complete: ${await evaluate("document.querySelector('.notice')?.innerText ?? 'No error message' ")}`);
 }
+if (!await evaluate("[...document.querySelectorAll('summary')].some((summary) => summary.innerText.includes('View route details'))")) {
+  throw new Error("The non-transactional route-details action is missing");
+}
 await evaluate("document.querySelector('.scan-all-action')?.click()");
-for (let attempt = 0; attempt < 120; attempt += 1) {
+for (let attempt = 0; attempt < 240; attempt += 1) {
   if (await evaluate("Boolean(document.querySelector('.board-summary'))")) break;
   await wait(500);
 }
 if (!await evaluate("Boolean(document.querySelector('.board-summary'))")) throw new Error("The optional opportunity scan did not complete");
+const opportunityRowCount = await evaluate("document.querySelectorAll('.opportunity-row').length");
+if (opportunityRowCount !== 9) throw new Error(`Expected 9 opportunity rows, found ${opportunityRowCount}`);
 
 const report = await evaluate(`JSON.stringify({
   viewport: { width: innerWidth, height: innerHeight },
@@ -81,8 +92,9 @@ const report = await evaluate(`JSON.stringify({
   rows: [...document.querySelectorAll('.opportunity-row')].map((row) => row.innerText.replace(/\\n+/g, ' · ')),
   boardSummary: document.querySelector('.board-summary')?.innerText,
   restrictionsVisible: Boolean(document.querySelector('.risk-note')),
-  executionState: document.querySelector('.execution-state')?.innerText,
-  executionAction: document.querySelector('.execution__action')?.innerText,
+  routeDetailsActions: [...document.querySelectorAll('summary')].filter((summary) => summary.innerText.includes('View route details')).length,
+  publicTransactionControls: document.querySelectorAll('.wallet-adapter-button, .execution-state, .execution__action').length,
+  executionDisclosure: document.body.innerText.includes('Trading execution is not currently available.'),
   amountHeight: document.querySelector('.amount-field')?.getBoundingClientRect().height,
   scanButtonHeight: document.querySelector('.compare-button')?.getBoundingClientRect().height,
   minimumPresetHeight: Math.min(...[...document.querySelectorAll('.preset-row button')].map((button) => button.getBoundingClientRect().height)),

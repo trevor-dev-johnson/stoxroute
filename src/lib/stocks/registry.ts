@@ -35,13 +35,14 @@ function pair(
   xMint: string,
   ondoSymbol: string,
   ondoMint: string,
+  verifiedAt = "2026-09-18",
 ): SupportedAsset {
   return {
     ticker,
     underlyingName,
     underlyingIsin,
     instrumentType,
-    verifiedAt: "2026-09-18",
+    verifiedAt,
     candidates: [
       { ticker, underlyingName, underlyingIsin, issuer: "xStocks", symbol: xSymbol, mint: xMint, expectedDecimals: 8, sourceUrl: BACKED_SOURCE },
       { ticker, underlyingName, underlyingIsin, issuer: "Ondo", symbol: ondoSymbol, mint: ondoMint, expectedDecimals: 9, sourceUrl: ONDO_SOURCE },
@@ -53,6 +54,12 @@ export const SUPPORTED_ASSETS = [
   pair("NVDA", "NVIDIA", "US67066G1040", "stock", "NVDAx", "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh", "NVDAon", "gEGtLTPNQ7jcg25zTetkbmF7teoDLcrfTnQfmn2ondo"),
   pair("TSLA", "Tesla", "US88160R1014", "stock", "TSLAx", "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB", "TSLAon", "KeGv7bsfR4MheC1CkmnAVceoApjrkvBhHYjWb67ondo"),
   pair("SPY", "SPDR S&P 500 ETF", "US78462F1030", "etf", "SPYx", "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W", "SPYon", "k18WJUULWheRkSpSquYGdNNmtuE2Vbw1hpuUi92ondo"),
+  pair("AAPL", "Apple", "US0378331005", "stock", "AAPLx", "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp", "AAPLon", "123mYEnRLM2LLYsJW3K6oyYh8uP1fngj732iG638ondo", "2026-09-19"),
+  pair("MSFT", "Microsoft", "US5949181045", "stock", "MSFTx", "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX", "MSFTon", "FRmH6iRkMr33DLG6zVLR7EM4LojBFAuq6NtFzG6ondo", "2026-09-19"),
+  pair("META", "Meta Platforms", "US30303M1027", "stock", "METAx", "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu", "METAon", "fDxs5y12E7x7jBwCKBXGqt71uJmCWsAQ3Srkte6ondo", "2026-09-19"),
+  pair("AMZN", "Amazon", "US0231351067", "stock", "AMZNx", "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg", "AMZNon", "14Tqdo8V1FhzKsE3W2pFsZCzYPQxxupXRcqw9jv6ondo", "2026-09-19"),
+  pair("GOOGL", "Alphabet Class A", "US02079K3059", "stock", "GOOGLx", "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN", "GOOGLon", "bbahNA5vT9WJeYft8tALrH1LXWffjwqVoUbqYa1ondo", "2026-09-19"),
+  pair("QQQ", "Invesco QQQ", "US46090E1038", "etf", "QQQx", "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ", "QQQon", "HrYNm6jTQ71LoFphjVKBTdAE4uja7WsmLG8VxB8ondo", "2026-09-19"),
 ] as const satisfies readonly SupportedAsset[];
 
 export type SupportedTicker = (typeof SUPPORTED_ASSETS)[number]["ticker"];

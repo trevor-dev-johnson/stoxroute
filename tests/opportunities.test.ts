@@ -67,13 +67,13 @@ describe("multi-asset opportunity scanning", () => {
   it("isolates one asset failure and reports an entire scan failure honestly", async () => {
     const partialScan = await scanOpportunities("1000", { createRound: async (asset) => {
       if (asset.ticker === "TSLA") throw new Error("provider down");
-      return roundFor(asset.ticker === "NVDA" ? 0 : 2, "1.01", "1");
+      return roundFor(SUPPORTED_ASSETS.findIndex((candidate) => candidate.ticker === asset.ticker), "1.01", "1");
     } });
-    expect(partialScan).toMatchObject({ completeCount: 2, unavailableCount: 1 });
+    expect(partialScan).toMatchObject({ completeCount: SUPPORTED_ASSETS.length - 1, unavailableCount: 1 });
     expect(opportunityForTicker(partialScan.opportunities, "TSLA")).toMatchObject({ status: "unavailable", message: "provider down" });
 
     const failed = await scanOpportunities("1000", { createRound: async () => { throw new Error("offline"); } });
-    expect(failed).toMatchObject({ completeCount: 0, partialCount: 0, unavailableCount: 3 });
+    expect(failed).toMatchObject({ completeCount: 0, partialCount: 0, unavailableCount: SUPPORTED_ASSETS.length });
   });
 
   it("enforces the configured concurrency limit", async () => {

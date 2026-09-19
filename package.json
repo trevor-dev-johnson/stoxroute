@@ -20,7 +20,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify:registry": "node scripts/verify-asset-registry.mjs"
   },
   "dependencies": {
     "@solana/wallet-adapter-base": "^0.9.28",

@@ -4,7 +4,7 @@
 
 **Live demo:** [stoxroute.vercel.app](https://stoxroute.vercel.app)
 
-StoxRoute lets a user choose NVIDIA, Tesla, or SPY and compare the verified issuer routes for one exact USDC input. It normalizes every output with current Token-2022 Scaled UI state and explains the exposure and quote-implied value difference. The comparison works without a wallet; a bounded multi-asset scanner remains available as a secondary view.
+StoxRoute lets a user choose from nine verified stocks and ETFs and compare two issuer routes for one exact USDC input. It normalizes every output with current Token-2022 Scaled UI state and explains the exposure and quote-implied value difference. A bounded multi-asset scanner remains available as a secondary view.
 
 ![StoxRoute desktop scanner](docs/screenshots/stoxroute-desktop.png)
 
@@ -21,12 +21,18 @@ The bounded production registry contains:
 - NVIDIA: NVDAx versus NVDAon
 - Tesla: TSLAx versus TSLAon
 - SPDR S&P 500 ETF: SPYx versus SPYon
+- Apple: AAPLx versus AAPLon
+- Microsoft: MSFTx versus MSFTon
+- Meta Platforms: METAx versus METAon
+- Amazon: AMZNx versus AMZNon
+- Alphabet Class A: GOOGLx versus GOOGLon
+- Invesco QQQ: QQQx versus QQQon
 
 Exact issuer sources and live-mint verification are in [docs/ASSET-REGISTRY.md](docs/ASSET-REGISTRY.md).
 
 ## Verified functionality
 
-- Live walletless scanning of three issuer pairs for `$1`–`$10,000` USDC.
+- Live walletless comparison and scanning of nine issuer pairs for `$1`–`$10,000` USDC.
 - Streaming progress while assets are processed sequentially; the two routes within each pair are fetched together.
 - One bounded whole-pair retry after Jupiter `429`; no unbounded polling or fixture fallback.
 - Exact decimal conversion and BigInt-safe base-unit handling.
@@ -36,7 +42,8 @@ Exact issuer sources and live-mint verification are in [docs/ASSET-REGISTRY.md](
 - Existing per-asset `/api/quotes` support for every registry ticker.
 - Wallet Standard discovery through Solana Wallet Adapter, including Phantom when installed.
 - Server-disabled execution infrastructure with wallet proof, optional allowlist, fresh taker order, signed intent binding, decoded transaction validation, simulation, and confirmed-chain receipt accounting.
-- 57 domain, registry, asset-search, scanner, accessibility, HTTP-boundary, and execution-boundary tests.
+- A repeatable official-source verifier that joins on underlying ISIN, validates coherent mint state, and requires two positive live quotes before registry inclusion.
+- 59 domain, registry, public-scope, asset-search, scanner, accessibility, HTTP-boundary, and execution-boundary tests.
 
 No live transaction has been prepared, signed, submitted, or confirmed during the scanner work. Execution remains disabled pending separate semantic validation and independently eligible tester verification.
 
@@ -45,7 +52,7 @@ No live transaction has been prepared, signed, submitted, or confirmed during th
 1. Open the app without connecting a wallet.
 2. Search by ticker/company name or choose a curated featured market.
 3. Choose a preset or enter one exact USDC budget, then select **Compare routes**.
-4. Read the side-by-side issuer result and the fresh complete-pair verdict. Expand **Instrument details** to inspect the ISIN, mint, raw output, multiplier, cache status, router, fees, and quote time.
+4. Read the side-by-side issuer result and the fresh complete-pair verdict. Expand **View route details** to inspect the ISIN, mint, raw output, multiplier, cache status, router, fees, and quote time.
 5. Optionally select **Scan all supported markets** to stream the bounded Opportunity Board. Complete pairs rank first; partial and unavailable rows remain visible but unranked.
 6. Select a board row to bring that market back into the primary comparison workspace.
 
@@ -137,13 +144,13 @@ The production dependency audit currently reports 12 moderate transitive advisor
 
 ## Demo guidance
 
-Run a `$1,000` scan, point out incremental progress and any honest partial result, sort the board, select a complete row, and explain the detailed normalized comparison. Say explicitly that the values are estimates, the dollar difference is quote-implied, and purchasing remains unavailable. See [docs/SUBMISSION.md](docs/SUBMISSION.md).
+Choose a market, run a `$1,000` comparison, and explain the normalized exposure and quote-implied difference. Then optionally scan all supported markets and point out incremental progress and any honest partial result. Say explicitly that the values are estimates and trading execution is not currently available. See [docs/SUBMISSION.md](docs/SUBMISSION.md).
 
 ![StoxRoute mobile scanner](docs/screenshots/stoxroute-mobile.png)
 
 ## Limitations
 
-- The scanner is intentionally limited to three verified pairs; it is not a general token-discovery engine.
+- The scanner is intentionally limited to nine verified pairs; it is not a general token-discovery engine.
 - Quote ranking does not assess issuer quality, legal equivalence, availability to a particular person, or final execution cost.
 - Public RPC and Jupiter rate limits can temporarily produce partial or unavailable rows.
 - Process-local request throttling is not distributed rate limiting.
@@ -154,7 +161,7 @@ Run a `$1,000` scan, point out incremental progress and any honest partial resul
 1. Configure dedicated Solana RPC and Jupiter credentials for shared-demo reliability.
 2. Separately close semantic transaction-flow validation before considering execution.
 3. Complete an independently eligible, smallest-meaningful-amount supervised verification only with explicit authorization.
-4. Add another asset only after issuer mappings and live Token-2022 normalization pass the registry checks.
+4. Rerun `node scripts/verify-asset-registry.mjs` before any registry addition; never promote a ticker-only match or a one-sided quote.
 
 ## Sources and credits
 

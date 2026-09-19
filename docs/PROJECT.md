@@ -17,21 +17,20 @@ The distinct work is company-to-instrument selection and normalization. Jupiter 
 | Tier | Included | Completion standard |
 |---|---|---|
 | First runnable slice | NVIDIA, NVDAx/NVDAon, USDC, live comparison and failure states | A real quote pair is normalized and explained on screen |
-| Target hackathon MVP | First slice + eligible wallet flow, fresh order, submission, confirmed receipt | Eligible tester completes the loop with recorded evidence |
-| After core passes | Tesla and SPY | Revalidate their remaining data/route checks before enabling |
+| Target hackathon MVP | Asset-first walletless comparison plus a secondary bounded scanner | Every supported pair passes issuer identity, live mint-state, and two-route quote verification |
+| Current expansion | NVDA, TSLA, SPY, AAPL, MSFT, META, AMZN, GOOGL, and QQQ | Exact official-source overlap plus positive live routes |
 | Deferred | Everything listed under non-goals | Do not spend the sprint on it |
 
 Quote mode is useful and can be demonstrated honestly if execution remains blocked. It is not the same as completing the trading MVP. Do not present mocked confirmation as a real trade.
 
 ## Required user journey
 
-1. Open the app without connecting a wallet. NVIDIA is the only enabled company initially.
+1. Open the walletless comparison and choose one of the nine verified stocks or ETFs.
 2. Enter a USDC amount or choose **100 / 1,000 / 10,000**. Use a Compare button; presets may submit one request. Do not fetch on every keystroke.
 3. Fetch both quotes as one comparison round. Display the actual issuer/token and estimated NVIDIA share-equivalent exposure.
 4. If both are current and comparable, explain the larger exposure and the percentage difference. If costs are unresolved, explicitly limit the comparison to quote output before unverified wallet costs.
-5. Allow the user to inspect the issuer, mint, fees and restrictions. They choose which supported token they wish to acquire; the “best quoted exposure” label is not a judgment about legal rights or issuer safety.
-6. An eligible tester connects a supported wallet, requests fresh quotes/order, reviews actual token and costs, and signs explicitly.
-7. Show submitted/confirming/confirmed/failed status, then actual USDC debited and tokens credited with an explorer link. Keep the estimate distinct from the receipt.
+5. Allow the user to inspect the issuer, mint, fees, multiplier state, router, and restrictions. The “best quoted exposure” label is not a judgment about legal rights or issuer safety.
+6. Keep the market-wide scan secondary and disclose once in the footer that trading execution is not currently available.
 
 ## Screen specification
 
@@ -39,15 +38,16 @@ A single responsive page is enough. Dark navy/charcoal background, legible light
 
 | Area | Content |
 |---|---|
-| Header | StoxRoute, concise product description, wallet action only when relevant |
+| Header | StoxRoute and current network; no wallet or transaction action |
 | Input | NVIDIA label, USDC amount field, presets, Compare button |
 | Comparison | Two issuer cards on mobile or an aligned table on desktop |
 | Primary route fields | Issuer, symbol, share-equivalent exposure, USDC per share-equivalent, quote age |
 | Supporting details | Raw token amount, multiplier/source time, mint, router, fees, minimum output when supplied |
-| Action | Review selected token; clear reason if execution is unavailable |
-| Receipt | Status, actual amounts, selected issuer/token, signature/explorer |
+| Action | Expand **View route details** for either issuer |
 
-Required states: idle; fetching; both available; tie/near-tie; only one available; both unavailable; normalization unavailable; rate limited; stale; wallet disconnected/rejected; eligibility unavailable; refreshing order; signing; submitted/confirming; failed; confirmed.
+Required public states: idle; fetching; both available; tie/near-tie; only one available; both unavailable; normalization unavailable; rate limited; and stale.
+
+The existing server-disabled wallet and execution infrastructure remains maintained and tested outside the public product flow. Its separate engineering contract is documented in [EXECUTION.md](EXECUTION.md).
 
 Show “not supplied” for missing route details, not invented liquidity or zero price impact. No green winner badge when only one issuer answered. Preserve prior results visibly marked stale during refresh; never silently relabel them live.
 
@@ -58,4 +58,3 @@ Use keyboard-accessible controls, visible focus, labeled inputs, sufficient cont
 No user accounts, database, portfolio/history dashboard, charts, news, AI picks, automated issuer-quality score, social/copy trading, DCA, limits, alerts, sell/migration flow, leverage, borrowing, yield, mobile-native app, custom Solana program, direct issuer mint/redeem, referral revenue or token launch. No Meteora DBC or Clawpump bounty work.
 
 The success test is one understandable live loop. More supported tickers are optional; correctness, honest errors and a defensible demonstration matter more.
-

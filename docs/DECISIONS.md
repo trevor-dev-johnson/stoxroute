@@ -185,3 +185,13 @@ This is an append-only record of decisions that would otherwise get relitigated 
 **Consequence:** No quote runs until a supported asset is chosen and submitted. Changing the asset or amount clears and aborts the prior comparison. Only a complete fresh pair can show a leading route or become an execution candidate; partial, stale, and provider-error states retain their existing semantics. Featured markets are curated registry shortcuts, not popularity or investment rankings.
 
 **Clarifies:** D016 and D018. The API, normalization, Jupiter, wallet, and server-disabled execution boundaries are unchanged.
+
+## 2026-09-19 — D020: Public product is comparison-only; registry additions require two live routes
+
+**Decision:** Remove wallet, tester, signing, and execution controls from the public page while retaining the fail-closed server infrastructure and its tests. Expose route inspection through non-transactional details and use one footer sentence: “Trading execution is not currently available.” Expand the runtime registry only when official xStocks and Ondo data agree on underlying ISIN and ticker, both official Solana mints pass coherent onchain validation, and both Jupiter routes return positive matching quotes in the same verification pass.
+
+**Reason:** Internal execution readiness was obscuring the usable product today. Ticker-only joins and one-sided quote availability are also too weak for a financial comparison registry.
+
+**Consequence:** The public journey ends at route details. AAPL, MSFT, META, AMZN, GOOGL, and QQQ join the previously verified NVDA, TSLA, and SPY pairs. COIN, PLTR, NFLX, and GLD remain excluded for the documented identity or live-route failures. `scripts/verify-asset-registry.mjs` makes the evidence gate repeatable without turning historical observations into runtime fallbacks.
+
+**Clarifies:** D015 and D019. Execution endpoints, wallet components, validation, and security controls remain in the repository but are not imported by the public page.

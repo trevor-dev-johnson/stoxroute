@@ -1,10 +1,10 @@
 # StoxRoute current status
 
-Last updated: **2026-09-19 10:18 Eastern**, after local asset-first information-architecture redesign and verification.
+Last updated: **2026-09-19 15:59 Eastern**, during the nine-asset walletless-product release verification.
 
 ## Phase
 
-**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled. The local working tree now leads with a walletless selected-asset comparison and retains the three-asset Opportunity Board as a secondary streamed scan. The redesign is fully verified locally but is not yet committed, pushed, or deployed; production still serves the preceding scanner-first release.** Demo recording, hackathon form submission, and live tester execution are not complete at this timestamp.
+**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled and is no longer exposed in the public product flow. The local working tree leads with walletless selected-asset comparison across nine independently verified xStocks/Ondo pairs and retains the Opportunity Board as a secondary streamed scan. Local automated verification is green; browser and deployment verification remain in progress at this timestamp.** Demo recording and hackathon form submission are not complete.
 
 Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **2026-09-18 16:00 Eastern / 20:00 UTC**. Main track only.
 
@@ -20,6 +20,8 @@ Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. D
 - [x] NVDA, TSLA, and SPY xStocks/Ondo mappings independently reverified from current issuer sources.
 - [x] All six current Solana mints verified as initialized, unpaused Token-2022 mints with matching metadata, expected 8/9 decimals, and Scaled UI state at confirmed slot `448126418`.
 - [x] Multi-asset streaming scan, progress, failure isolation, ranking, per-asset detail, and 30-second freshness implemented.
+- [x] AAPL, MSFT, META, AMZN, GOOGL, and QQQ added after official-source ISIN matching, exact mint validation, confirmed onchain decimals/multipliers, and positive live Jupiter quotes on both routes.
+- [x] Repeatable official-source registry verifier implemented; COIN, PLTR, NFLX, and GLD remain excluded because identity or live-route requirements did not fully pass in the verification window.
 
 Findings are in [VERIFIED-FINDINGS.md](VERIFIED-FINDINGS.md); they are not runtime constants or completed application features.
 
@@ -36,13 +38,13 @@ Findings are in [VERIFIED-FINDINGS.md](VERIFIED-FINDINGS.md); they are not runti
 
 ## Next task — requires Trevor
 
-Review and commit the verified asset-first redesign, push `main`, then verify the resulting Vercel production deployment before recording an updated demo.
+Complete desktop/mobile browser verification, commit and push the green release, then verify the resulting Vercel production deployment before recording the updated demo.
 
 ## Unknowns and blockers
 
 | Item | Current truth |
 |---|---|
-| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; local `HEAD` and `origin/main` are `a2b57e0`; the asset-first redesign is an intentional uncommitted working tree for Trevor to review and push |
+| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; local `HEAD` and `origin/main` are `3bafeb4`; the nine-asset public-scope correction is an intentional uncommitted working tree pending final browser verification |
 | Framework/dependency versions/commands | Node 24.13.1, npm 11.8.0, Next 16.3.5, React 19.2.8; commands in README/package.json |
 | Deployment/domain | Production deployment verified at `https://stoxroute.vercel.app`; execution config is persisted as `false` across Vercel environments |
 | Jupiter credentials | No key configured; walletless spike worked, but managed execution currently requires a server-side key |
@@ -51,7 +53,7 @@ Review and commit the verified asset-first redesign, push `main`, then verify th
 | Execution eligibility | Independent eligible tester not identified |
 | Transaction construction/simulation/signing/receipt | Infrastructure and fixture tests complete; no live taker order, wallet action, submission, or receipt verified |
 | Hackathon registration/submission | Not verified |
-| Tesla/SPY scanner support | Registry, mint-state validation, live quote scanning, ranking, and failure isolation are implemented; SPY can remain unavailable under keyless Jupiter throttling and is never ranked without a complete pair |
+| Supported registry/scanner behavior | Nine verified pairs are registered; runtime revalidates mint state and live quotes, while provider throttling or market-hour restrictions remain visible as unranked partial/unavailable rows rather than fixture fallbacks |
 
 ## Security review summary
 
@@ -169,3 +171,14 @@ Append a concise note and update phase/checklists/next task above:
 - Blocked/unverified: the local redesign has not been committed, pushed, deployed, or production-smoked. Provider throttling can still produce honest unavailable scanner rows.
 - Decisions changed: D019 makes selected-asset comparison primary and retains D018 scanning as secondary; backend, registry, arithmetic, Jupiter, and execution contracts are unchanged.
 - Exact next task: Trevor reviews, commits, and pushes this working tree; then verify the automatic Vercel deployment before recording the updated demo.
+
+### 2026-09-19 16:05 Eastern — nine-asset public-scope release working tree
+
+- Implemented: removed the public wallet action and supervised-execution panel while retaining the fail-closed server and wallet infrastructure; replaced transaction-oriented route actions with `View route details`; reduced execution disclosure to the single footer sentence; added AAPL, MSFT, META, AMZN, GOOGL, and QQQ to the verified registry; added an official-source ISIN-join/onchain/Jupiter verification script; and hardened signed envelopes to reject non-canonical base64url encodings discovered by the tamper test.
+- Registry evidence: the 2026-09-19 pass joined xStocks and Ondo by underlying ISIN and then required matching tickers. All twelve new route mints passed official-address, initialized Token-2022 mint, expected 8/9 decimal, metadata, supply, pause-state, active multiplier, and positive $100 Jupiter quote checks. COIN failed ticker consistency after the ISIN join; PLTR, NFLX, and GLD failed the positive-two-route requirement in the verification window and were excluded.
+- Checks run and actual results: `npm run typecheck`, `npm run lint`, and `npm run build` passed; `npm test` passed 59/59 across 14 files; `git diff --check` passed; only `.env.example` is tracked from `.env*`; the execution status endpoint remained `enabled:false` / `configured:false`, and a direct challenge attempt returned HTTP 403. `npm audit --omit=dev --audit-level=high` reported 12 known moderate transitive Solana-stack advisories, 0 high/critical, and no available fix.
+- Browser evidence: the local production build completed a live AAPL comparison with two current routes; route details exposed the exact ISIN, mint, decimals, multiplier, slot, and quote timing without a transaction action. The secondary scan rendered all nine markets, ranked four complete pairs, and left five provider failures visibly unavailable and unranked. At 1440×1000 and 390×844 there was no horizontal overflow; mobile controls retained 55px/44px targets; no wallet/execution controls were present; the footer disclosure was present; and the browser warning/error log was empty.
+- Transaction truth: execution remained server-disabled. No order or transaction was prepared, signed, submitted, or confirmed.
+- Blocked/unverified at this timestamp: production deployment of this working tree, uploaded demo, and hackathon submission confirmation. Point-in-time provider availability can still leave valid registry pairs visibly unavailable during a scan.
+- Decisions changed: D020 records the public comparison-only scope and strict expanded-registry admission gate.
+- Exact next task: commit and push the green release, verify the resulting public Vercel deployment, then record/upload the updated walletless demo.
