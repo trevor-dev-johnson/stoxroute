@@ -195,3 +195,13 @@ This is an append-only record of decisions that would otherwise get relitigated 
 **Consequence:** The public journey ends at route details. AAPL, MSFT, META, AMZN, GOOGL, and QQQ join the previously verified NVDA, TSLA, and SPY pairs. COIN, PLTR, NFLX, and GLD remain excluded for the documented identity or live-route failures. `scripts/verify-asset-registry.mjs` makes the evidence gate repeatable without turning historical observations into runtime fallbacks.
 
 **Clarifies:** D015 and D019. Execution endpoints, wallet components, validation, and security controls remain in the repository but are not imported by the public page.
+
+## 2026-09-20 — D021: Answer-first public comparison with independent display freshness
+
+**Decision:** Frame the public product around one compact asset-and-budget question, present the computed winner and advantage before the issuer cards, use contextual estimated-exposure language in the default view, and keep technical normalization evidence inside route details. Preserve displayed quote values and the winner as they age; show a non-blocking timestamp immediately and a light “may no longer reflect current routing” warning after two minutes.
+
+**Reason:** The prior hero, featured-market cards, selected-asset summary, dense route metrics, and 30-second stale failure state made a simple walletless comparison feel like an operations console. Public quote inspection and future transaction authorization have different freshness needs.
+
+**Consequence:** Popular tickers are compact shortcuts rather than promotional cards, the nine-market scanner is a secondary action, cards round exposure to five decimals while details retain full precision, and public display age no longer changes a valid historical result into a failure. The existing 30-second execution intent boundary, quote calculations, registry, backend validation, and server-disabled execution gate are unchanged.
+
+**Clarifies:** D016, D019, and D020. It supersedes D018 only for public display-freshness treatment.

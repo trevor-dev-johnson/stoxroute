@@ -39,17 +39,18 @@ A single responsive page is enough. Dark navy/charcoal background, legible light
 | Area | Content |
 |---|---|
 | Header | StoxRoute and current network; no wallet or transaction action |
-| Input | NVIDIA label, USDC amount field, presets, Compare button |
+| Input | Searchable verified-asset picker, USDC amount field, Compare button, and compact popular-ticker shortcuts |
 | Comparison | Two issuer cards on mobile or an aligned table on desktop |
-| Primary route fields | Issuer, symbol, share-equivalent exposure, USDC per share-equivalent, quote age |
+| Answer | Winner first, additional contextual exposure, percentage advantage, quote-implied difference, and non-blocking age |
+| Primary route fields | Issuer, symbol, estimated underlying exposure, unit cost, and router |
 | Supporting details | Raw token amount, multiplier/source time, mint, router, fees, minimum output when supplied |
-| Action | Expand **View route details** for either issuer |
+| Action | Refresh quote or expand **View details** for either issuer |
 
-Required public states: idle; fetching; both available; tie/near-tie; only one available; both unavailable; normalization unavailable; rate limited; and stale.
+Required public states: idle; fetching; both available; tie/near-tie; only one available; both unavailable; normalization unavailable; rate limited; and over-two-minute age warning.
 
 The existing server-disabled wallet and execution infrastructure remains maintained and tested outside the public product flow. Its separate engineering contract is documented in [EXECUTION.md](EXECUTION.md).
 
-Show “not supplied” for missing route details, not invented liquidity or zero price impact. No green winner badge when only one issuer answered. Preserve prior results visibly marked stale during refresh; never silently relabel them live.
+Show “not supplied” for missing route details, not invented liquidity or zero price impact. No green winner badge when only one issuer answered. Preserve prior results during refresh. Public comparisons keep their displayed values and winner, show a non-blocking age, and add a light warning after two minutes; the separate execution path keeps its strict short-lived gate.
 
 Use keyboard-accessible controls, visible focus, labeled inputs, sufficient contrast and small-screen layouts. Numeric display can round to 6–8 places, while comparison keeps full precision. For tiny differences use percentages/share-equivalents, not inflated dollar claims.
 

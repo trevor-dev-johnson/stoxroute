@@ -1,4 +1,6 @@
-const [url = "http://localhost:3002", widthInput = "390", heightInput = "844", port = "9223"] = process.argv.slice(2);
+import { writeFile } from "node:fs/promises";
+
+const [url = "http://localhost:3002", widthInput = "390", heightInput = "844", port = "9223", screenshotPath] = process.argv.slice(2);
 const width = Number(widthInput);
 const height = Number(heightInput);
 const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -51,15 +53,16 @@ for (let attempt = 0; attempt < 80; attempt += 1) {
 if (!await evaluate("Boolean(document.querySelector('.compare-button'))")) {
   throw new Error("The comparison control did not become available");
 }
+await wait(400);
 if (await evaluate("Boolean(document.querySelector('.wallet-adapter-button, .execution-state, .execution__action'))")) {
   throw new Error("Public transaction controls are still visible");
 }
 if (!await evaluate("document.body.innerText.includes('Trading execution is not currently available.')")) {
   throw new Error("The restrained footer disclosure is missing");
 }
-await evaluate("document.querySelector('.featured-market')?.click()");
+await evaluate("document.querySelector('.popular-tickers button')?.click()");
 if (await evaluate("Boolean(document.querySelector('.compare-button')?.disabled)")) {
-  throw new Error("Selecting a featured market did not enable comparison");
+  throw new Error("Selecting a popular market did not enable comparison");
 }
 await evaluate("document.querySelector('.compare-button')?.click()");
 for (let attempt = 0; attempt < 120; attempt += 1) {
@@ -69,8 +72,18 @@ for (let attempt = 0; attempt < 120; attempt += 1) {
 if (!await evaluate("Boolean(document.querySelector('.results'))")) {
   throw new Error(`The selected-market comparison did not complete: ${await evaluate("document.querySelector('.notice')?.innerText ?? 'No error message' ")}`);
 }
-if (!await evaluate("[...document.querySelectorAll('summary')].some((summary) => summary.innerText.includes('View route details'))")) {
+if (!await evaluate("[...document.querySelectorAll('summary')].some((summary) => summary.innerText.includes('View details'))")) {
   throw new Error("The non-transactional route-details action is missing");
+}
+if (!await evaluate("Boolean(document.querySelector('.answer-panel h2')) && document.querySelector('.answer-panel').offsetTop < document.querySelector('.routes').offsetTop")) {
+  throw new Error("The answer does not lead the route details");
+}
+if (screenshotPath) {
+  await wait(350);
+  await evaluate("document.querySelector('.answer-panel')?.scrollIntoView({ block: 'start' })");
+  await wait(150);
+  const screenshot = await call("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+  await writeFile(screenshotPath, Buffer.from(screenshot.data, "base64"));
 }
 await evaluate("document.querySelector('.scan-all-action')?.click()");
 for (let attempt = 0; attempt < 240; attempt += 1) {
@@ -92,12 +105,14 @@ const report = await evaluate(`JSON.stringify({
   rows: [...document.querySelectorAll('.opportunity-row')].map((row) => row.innerText.replace(/\\n+/g, ' · ')),
   boardSummary: document.querySelector('.board-summary')?.innerText,
   restrictionsVisible: Boolean(document.querySelector('.risk-note')),
-  routeDetailsActions: [...document.querySelectorAll('summary')].filter((summary) => summary.innerText.includes('View route details')).length,
+  answer: document.querySelector('.answer-panel h2')?.innerText,
+  difference: document.querySelector('.answer-panel__difference')?.innerText,
+  routeDetailsActions: [...document.querySelectorAll('summary')].filter((summary) => summary.innerText.includes('View details')).length,
   publicTransactionControls: document.querySelectorAll('.wallet-adapter-button, .execution-state, .execution__action').length,
   executionDisclosure: document.body.innerText.includes('Trading execution is not currently available.'),
   amountHeight: document.querySelector('.amount-field')?.getBoundingClientRect().height,
   scanButtonHeight: document.querySelector('.compare-button')?.getBoundingClientRect().height,
-  minimumPresetHeight: Math.min(...[...document.querySelectorAll('.preset-row button')].map((button) => button.getBoundingClientRect().height)),
+  minimumTickerChipHeight: Math.min(...[...document.querySelectorAll('.popular-tickers button')].map((button) => button.getBoundingClientRect().height)),
   consoleErrors: ${JSON.stringify(consoleErrors)},
 })`);
 console.log(report);

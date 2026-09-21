@@ -17,7 +17,8 @@ type StreamEvent =
   | { type: "complete"; scan: OpportunityScan }
   | { type: "error"; message: string };
 
-const FEATURED_ASSETS = SUPPORTED_ASSETS.filter((asset) => ["NVDA", "AAPL", "MSFT"].includes(asset.ticker));
+const POPULAR_TICKERS = ["NVDA", "AAPL", "TSLA", "MSFT", "META", "QQQ"] as const;
+const PUBLIC_QUOTE_WARNING_MS = 120_000;
 
 function compact(value: string, places = 8) {
   try {
@@ -41,7 +42,14 @@ function money(value: string, places = 2) {
 }
 function budget(value: string) { return `$${compact(canonicalAmount(value), 6)}`; }
 function shortMint(mint: string) { return `${mint.slice(0, 6)}…${mint.slice(-6)}`; }
-function exposureLabel(round: ComparisonRound) { return round.instrumentType === "etf" ? "normalized underlying exposure" : "normalized share-equivalent exposure"; }
+function exposureLabel(round: ComparisonRound) { return `Estimated ${round.ticker} exposure`; }
+function ageLabel(seconds: number) {
+  if (seconds < 5) return "Updated just now";
+  if (seconds < 60) return `Updated ${seconds} seconds ago`;
+  const minutes = Math.floor(seconds / 60);
+  return `Updated ${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+}
+function percentFromBps(value: string) { return `${compact(new Decimal(value).div(100).toFixed(), 2)}%`; }
 function validAmount(value: string): string | null {
   const canonical = canonicalAmount(value);
   if (!/^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(canonical)) return "Enter a plain USDC amount with up to 6 decimals.";
@@ -57,47 +65,44 @@ function AssetSelector({ query, selected, onQueryChange, onSelect }: { query: st
   const choose = (asset: SupportedAsset) => { onSelect(asset); setOpen(false); setActiveIndex(0); };
 
   return <div className="asset-picker">
-    <label htmlFor="asset-search">Choose a stock or ETF</label>
+    <label htmlFor="asset-search">Stock or ETF</label>
     <div className={`asset-combobox ${open ? "asset-combobox--open" : ""}`}>
       <span className="asset-combobox__search" aria-hidden>⌕</span>
-      <input id="asset-search" role="combobox" aria-autocomplete="list" aria-controls="asset-options" aria-expanded={open} aria-activedescendant={open && filtered[activeIndex] ? `asset-option-${filtered[activeIndex].ticker}` : undefined} value={query} placeholder="Search NVDA, Apple, QQQ…" onFocus={() => setOpen(true)} onChange={(event) => { onQueryChange(event.target.value); setOpen(true); setActiveIndex(0); }} onKeyDown={(event) => {
+      <input id="asset-search" role="combobox" aria-autocomplete="list" aria-controls="asset-options" aria-expanded={open} aria-activedescendant={open && filtered[activeIndex] ? `asset-option-${filtered[activeIndex].ticker}` : undefined} value={query} placeholder="Search NVIDIA, Apple, Tesla, ETF…" onFocus={() => setOpen(true)} onChange={(event) => { onQueryChange(event.target.value); setOpen(true); setActiveIndex(0); }} onKeyDown={(event) => {
         if (event.key === "ArrowDown") { event.preventDefault(); setOpen(true); setActiveIndex((index) => Math.min(index + 1, Math.max(filtered.length - 1, 0))); }
         if (event.key === "ArrowUp") { event.preventDefault(); setActiveIndex((index) => Math.max(index - 1, 0)); }
         if (event.key === "Enter" && open && filtered[activeIndex]) { event.preventDefault(); choose(filtered[activeIndex]); }
         if (event.key === "Escape") { event.preventDefault(); setOpen(false); }
       }} />
-      {selected && <span className="asset-combobox__selected">Verified pair</span>}
       {open && <div id="asset-options" role="listbox" aria-label="Supported markets" className="asset-options">
         {filtered.length ? filtered.map((asset, index) => <button id={`asset-option-${asset.ticker}`} role="option" aria-selected={selected?.ticker === asset.ticker} className={index === activeIndex ? "asset-option asset-option--active" : "asset-option"} type="button" key={asset.ticker} onMouseDown={(event) => event.preventDefault()} onClick={() => choose(asset)}>
-          <span className="asset-option__ticker">{asset.ticker}</span><span><strong>{asset.underlyingName}</strong><small>{asset.instrumentType === "etf" ? "ETF" : "Stock"} · {asset.candidates.map((candidate) => candidate.issuer).join(" + ")}</small></span><span className="asset-option__status">Live pair supported</span>
+          <span className="asset-option__ticker">{asset.ticker}</span><span><strong>{asset.underlyingName}</strong><small>{asset.instrumentType === "etf" ? "ETF" : "Stock"} · xStocks and Ondo</small></span><span className="asset-option__status">Supported</span>
         </button>) : <p className="asset-options__empty">No verified market matches “{query}”.</p>}
       </div>}
     </div>
-    <p className="asset-picker__help">Only assets with complete, verified issuer-pair registry entries are selectable.</p>
   </div>;
 }
 
-function CandidateView({ candidate, round, winner, stale }: { candidate: ComparisonRound["candidates"][number]; round: ComparisonRound; winner: boolean; stale: boolean }) {
+function CandidateView({ candidate, round, winner }: { candidate: ComparisonRound["candidates"][number]; round: ComparisonRound; winner: boolean }) {
   const available = candidate.status === "available";
   const failureLabel = candidate.status !== "available" && candidate.failure.code === "rate_limited" ? "rate limited" : "unavailable";
-  return <article className={`route ${winner && !stale ? "route--winner" : ""}`} aria-label={`${candidate.issuer} ${candidate.symbol}`}>
-    <div className="route__head"><div><p className="eyebrow">{candidate.issuer}</p><h3>{candidate.symbol}</h3></div><span className={`status-dot ${available ? "status-dot--live" : "status-dot--error"}`}>{available ? (stale ? "stale" : winner ? "Best quoted route" : "available") : failureLabel}</span></div>
+  return <article className={`route ${winner ? "route--winner" : ""}`} aria-label={`${candidate.issuer} ${candidate.symbol}`}>
+    <div className="route__head"><div><span className="route__issuer">{candidate.issuer}</span><h3>{candidate.symbol}</h3></div><span className={`status-dot ${available ? "status-dot--live" : "status-dot--error"}`}>{available ? winner ? "Better quote" : "Quoted" : failureLabel}</span></div>
     {available ? <>
-      <div className="route__number"><span>{compact(candidate.exposure)}</span><small>{exposureLabel(round)}</small></div>
-      <dl className="route__metrics"><div><dt>Quote-based unit cost</dt><dd>{money(candidate.usdcPerShareEquivalent, 4)}</dd></div><div><dt>Router</dt><dd>{candidate.router}</dd></div><div><dt>Quoted fee</dt><dd>{candidate.fees.feeBps === undefined ? "Not supplied" : `${candidate.fees.feeBps} bps · included`}</dd></div><div><dt>Availability</dt><dd>{stale ? "Refresh required" : "Current quote"}</dd></div></dl>
-      <details><summary>View route details</summary><dl className="details-grid"><div><dt>Underlying ISIN</dt><dd>{candidate.underlyingIsin}</dd></div><div><dt>Mint</dt><dd><a href={`https://solscan.io/token/${candidate.mint}`} target="_blank" rel="noreferrer">{shortMint(candidate.mint)} ↗</a></dd></div><div><dt>Raw output</dt><dd>{candidate.rawOutAmount}</dd></div><div><dt>Decimals</dt><dd>{candidate.decimals}</dd></div><div><dt>Active multiplier</dt><dd>{candidate.multiplier}</dd></div><div><dt>Mint slot</dt><dd>{candidate.mintSlot.toLocaleString()}</dd></div><div><dt>Normalization state</dt><dd>{candidate.normalizationCacheStatus} · {new Date(candidate.normalizationFetchedAt).toLocaleTimeString()}</dd></div><div><dt>Minimum exposure</dt><dd>{candidate.minimumExposure ? compact(candidate.minimumExposure) : "Not supplied"}</dd></div><div><dt>Gasless quote</dt><dd>{candidate.fees.gasless === undefined ? "Not supplied" : candidate.fees.gasless ? "Yes" : "No"}</dd></div><div><dt>Quote finished</dt><dd>{new Date(candidate.quoteFinishedAt).toLocaleTimeString()}</dd></div></dl></details>
+      <div className="route__number"><span>{compact(candidate.exposure, 5)}</span><small>{exposureLabel(round)}</small></div>
+      <dl className="route__metrics"><div><dt>Estimated unit cost</dt><dd>{money(candidate.usdcPerShareEquivalent, 4)}</dd></div><div><dt>Router</dt><dd>{candidate.router}</dd></div></dl>
+      <details><summary>View details</summary><div className="route__method"><strong>How exposure is calculated</strong><p>Token output is adjusted once for mint decimals and the current Token-2022 multiplier. This is an economic comparison unit, not legal stock ownership.</p></div><dl className="details-grid"><div><dt>Full-precision exposure</dt><dd>{candidate.exposure}</dd></div><div><dt>Underlying ISIN</dt><dd>{candidate.underlyingIsin}</dd></div><div><dt>Mint</dt><dd><a href={`https://solscan.io/token/${candidate.mint}`} target="_blank" rel="noreferrer">{shortMint(candidate.mint)} ↗</a></dd></div><div><dt>Raw token output</dt><dd>{candidate.rawOutAmount}</dd></div><div><dt>Decimals</dt><dd>{candidate.decimals}</dd></div><div><dt>Active multiplier</dt><dd>{candidate.multiplier}</dd></div><div><dt>Mint slot</dt><dd>{candidate.mintSlot.toLocaleString()}</dd></div><div><dt>Normalization state</dt><dd>{candidate.normalizationCacheStatus} · {new Date(candidate.normalizationFetchedAt).toLocaleTimeString()}</dd></div><div><dt>Minimum exposure</dt><dd>{candidate.minimumExposure ?? "Not supplied"}</dd></div><div><dt>Quoted fee</dt><dd>{candidate.fees.feeBps === undefined ? "Not supplied" : `${candidate.fees.feeBps} bps · included`}</dd></div><div><dt>Gasless quote</dt><dd>{candidate.fees.gasless === undefined ? "Not supplied" : candidate.fees.gasless ? "Yes" : "No"}</dd></div><div><dt>Quote finished</dt><dd>{new Date(candidate.quoteFinishedAt).toLocaleTimeString()}</dd></div></dl></details>
     </> : <div className="route__failure"><span aria-hidden>—</span><p>{candidate.failure.message}</p><small>This issuer is {failureLabel}. A complete pair is required before StoxRoute can name a winner.</small></div>}
   </article>;
 }
 
 function OpportunityRow({ opportunity, now, selected, onSelect }: { opportunity: AssetOpportunity; now: number; selected: boolean; onSelect: (opportunity: AssetOpportunity) => void }) {
   const round = opportunity.round;
-  const stale = round ? now > Date.parse(round.displayExpiresAt) : false;
   const age = round ? Math.max(0, Math.floor((now - Date.parse(round.createdAt)) / 1_000)) : null;
   const exposures = round?.candidates.map((candidate) => candidate.status === "available" ? `${candidate.symbol} ${compact(candidate.exposure, 6)}` : `${candidate.symbol} —`);
   const routers = round?.candidates.filter((candidate): candidate is AvailableCandidate => candidate.status === "available").map((candidate) => candidate.router);
-  const status = stale ? "Stale" : opportunity.status === "complete" ? "Complete" : opportunity.status === "partial" ? "Partial" : "Unavailable";
-  return <button className={`opportunity-row ${selected ? "opportunity-row--selected" : ""}`} type="button" onClick={() => onSelect(opportunity)}><span className="opportunity-row__asset"><strong>{opportunity.underlyingName}</strong><small>{opportunity.ticker} · {opportunity.instrumentType === "etf" ? "ETF" : "Stock"}</small></span><span><small>Winning issuer</small><strong>{opportunity.status === "complete" ? opportunity.winningIssuer ?? "Equal" : "—"}</strong></span><span><small>Normalized exposure</small><strong>{exposures?.join(" / ") ?? "No live routes"}</strong></span><span><small>Advantage</small><strong>{opportunity.status === "complete" && opportunity.advantageBps !== null ? `+${compact(opportunity.absoluteExposureAdvantage ?? "0", 6)} · ${compact(opportunity.advantageBps, 3)} bps` : "Not ranked"}</strong></span><span><small>Quote-implied difference</small><strong>{opportunity.status === "complete" && opportunity.quoteImpliedDollarAdvantage !== null ? money(opportunity.quoteImpliedDollarAdvantage) : "—"}</strong></span><span><small>Router</small><strong>{routers?.join(" / ") || "—"}</strong></span><span className={`opportunity-row__status opportunity-row__status--${opportunity.status}`}><small>{status}</small><strong>{age === null ? opportunity.message ?? "No result" : `${age}s old`}</strong></span></button>;
+  const status = opportunity.status === "complete" ? "Complete" : opportunity.status === "partial" ? "Partial" : "Unavailable";
+  return <button className={`opportunity-row ${selected ? "opportunity-row--selected" : ""}`} type="button" onClick={() => onSelect(opportunity)}><span className="opportunity-row__asset"><strong>{opportunity.underlyingName}</strong><small>{opportunity.ticker} · {opportunity.instrumentType === "etf" ? "ETF" : "Stock"}</small></span><span><small>Winning issuer</small><strong>{opportunity.status === "complete" ? opportunity.winningIssuer ?? "Equal" : "—"}</strong></span><span><small>Estimated exposure</small><strong>{exposures?.join(" / ") ?? "No live routes"}</strong></span><span><small>Advantage</small><strong>{opportunity.status === "complete" && opportunity.advantageBps !== null ? `+${compact(opportunity.absoluteExposureAdvantage ?? "0", 6)} · ${compact(opportunity.advantageBps, 3)} bps` : "Not ranked"}</strong></span><span><small>Quote-implied difference</small><strong>{opportunity.status === "complete" && opportunity.quoteImpliedDollarAdvantage !== null ? money(opportunity.quoteImpliedDollarAdvantage) : "—"}</strong></span><span><small>Router</small><strong>{routers?.join(" / ") || "—"}</strong></span><span className={`opportunity-row__status opportunity-row__status--${opportunity.status}`}><small>{status}</small><strong>{age === null ? opportunity.message ?? "No result" : ageLabel(age)}</strong></span></button>;
 }
 
 export default function Home() {
@@ -124,11 +129,11 @@ export default function Home() {
   useEffect(() => { const initial = window.setTimeout(() => setClock(Date.now()), 0); const timer = window.setInterval(() => setClock(Date.now()), 1_000); return () => { window.clearTimeout(initial); window.clearInterval(timer); }; }, []);
   const selectedAsset = selectedTicker ? assetForTicker(selectedTicker) ?? null : null;
   const sorted = useMemo(() => sortOpportunities(opportunities, sortMode), [opportunities, sortMode]);
-  const stale = round ? clock > Date.parse(round.displayExpiresAt) : false;
   const age = round ? Math.max(0, Math.floor((clock - Date.parse(round.createdAt)) / 1_000)) : 0;
-  const secondsLeft = round ? Math.max(0, Math.ceil((Date.parse(round.displayExpiresAt) - clock) / 1_000)) : 0;
+  const quoteMayBeOutdated = age * 1_000 >= PUBLIC_QUOTE_WARNING_MS;
   const availableCount = round?.candidates.filter((candidate) => candidate.status === "available").length ?? 0;
   const selectedValue = round ? quoteImpliedDollarAdvantage(round) : null;
+  const winningCandidate = round?.comparison?.winnerSymbol ? round.candidates.find((candidate): candidate is AvailableCandidate => candidate.status === "available" && candidate.symbol === round.comparison?.winnerSymbol) ?? null : null;
 
   function clearComparison() { comparisonRequest.current?.abort(); comparisonRequest.current = null; comparisonSequence.current += 1; setRound(null); setComparisonError(null); setComparisonLoading(false); }
   function selectAsset(asset: SupportedAsset) { if (asset.ticker !== selectedTicker) clearComparison(); setSelectedTicker(asset.ticker); setAssetQuery(assetSearchLabel(asset)); setAmountError(null); }
@@ -173,31 +178,36 @@ export default function Home() {
     window.setTimeout(() => document.getElementById(opportunity.round ? "comparison-detail" : "comparison-form")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   }
 
-  const comparisonCopy = (() => {
-    if (!round?.comparison) return null;
-    if (round.comparison.label === "equal") return "Both routes returned equal quoted exposure.";
-    const winner = round.candidates.find((candidate) => candidate.symbol === round.comparison?.winnerSymbol); const bps = compact(round.comparison.advantageBps, 3);
-    return round.comparison.label === "nearly_equal" ? `Quotes are nearly equal. ${winner?.issuer} leads by ${bps} bps.` : `${winner?.issuer} delivers ${bps} bps more quoted exposure for this input.`;
-  })();
+  const answerHeading = !round?.comparison
+    ? "A complete pair is needed to name a better route"
+    : round.comparison.label === "equal"
+      ? "Both routes have the same quoted exposure"
+      : round.comparison.label === "nearly_equal"
+        ? `${winningCandidate?.issuer} is narrowly ahead right now`
+        : `${winningCandidate?.issuer} is currently the better quoted route`;
 
   return <main>
     <header className="topbar"><a className="brand" href="#top" aria-label="StoxRoute home"><span className="brand__mark">SR</span>StoxRoute</a><div className="network"><span /> Solana mainnet</div></header>
     <section className="workspace" id="top">
-      <div className="intro"><p className="eyebrow">Issuer-aware route comparison</p><h1>Compare tokenized<br />stock routes.</h1><p className="intro__copy">Choose a stock, set your USDC budget, and see which issuer delivers more normalized underlying exposure.</p></div>
-      <section className="compare-workspace" id="comparison-form" aria-label="Compare tokenized stock routes">
-        <AssetSelector query={assetQuery} selected={selectedAsset} onQueryChange={changeAssetQuery} onSelect={selectAsset} />
-        <div className="featured-markets"><div className="section-kicker"><span>Featured markets</span><small>Curated from the verified registry—not a popularity ranking.</small></div><div className="featured-markets__grid">{FEATURED_ASSETS.map((asset) => <button type="button" key={asset.ticker} className={selectedTicker === asset.ticker ? "featured-market featured-market--selected" : "featured-market"} onClick={() => selectAsset(asset)}><span className="featured-market__ticker">{asset.ticker}</span><span className="featured-market__identity"><strong>{asset.underlyingName}</strong><small>{asset.instrumentType === "etf" ? "ETF" : "Stock"} · 2 issuers</small></span><span className="featured-market__state">Supported</span></button>)}</div></div>
-        <ScanForm amount={amount} asset={selectedAsset} loading={comparisonLoading} invalidMessage={amountError} onAmountChange={changeAmount} onAmountBlur={() => setAmount(formattedAmount(amount))} onPreset={(value) => changeAmount(formattedAmount(value))} onSubmit={runComparison} />
-        <button className="scan-all-action" type="button" disabled={scanLoading} onClick={() => void runScan()}>{scanLoading ? "Scanning supported markets…" : "Scan all supported markets"}<span aria-hidden>↘</span></button>
+      <div className="intro"><h1>Find the better tokenized-stock route.</h1><p className="intro__copy">Choose a market and budget. StoxRoute compares both verified issuer routes using current quotes.</p></div>
+      <section className="compare-workspace" id="comparison-form" aria-label="Find the better tokenized-stock route">
+        <div className="comparison-form-grid"><AssetSelector query={assetQuery} selected={selectedAsset} onQueryChange={changeAssetQuery} onSelect={selectAsset} /><ScanForm amount={amount} asset={selectedAsset} loading={comparisonLoading} invalidMessage={amountError} onAmountChange={changeAmount} onAmountBlur={() => setAmount(formattedAmount(amount))} onSubmit={runComparison} /></div>
+        <div className="popular-tickers" aria-label="Popular supported markets"><span>Popular</span>{POPULAR_TICKERS.map((ticker) => { const asset = assetForTicker(ticker); return asset ? <button type="button" key={ticker} aria-pressed={selectedTicker === ticker} onClick={() => selectAsset(asset)}>{ticker}</button> : null; })}</div>
+        <button className="scan-all-action" type="button" disabled={scanLoading} onClick={() => void runScan()}>{scanLoading ? `Scanning ${progress.completed} of ${progress.total}…` : `Scan all ${SUPPORTED_ASSETS.length} supported markets`}<span aria-hidden>↓</span></button>
       </section>
       {comparisonError && <div className="notice notice--error" role="alert"><div><strong>Comparison unavailable</strong><span>{comparisonError}</span></div><button type="button" onClick={() => void runComparison()}>Retry comparison</button></div>}
-      {!round && !comparisonLoading && <section className="comparison-empty" aria-live="polite"><span>01</span><div><p className="eyebrow">Ready when you are</p><h2>{selectedAsset ? `Compare ${selectedAsset.ticker} issuer routes` : "Choose a market to begin"}</h2><p>{selectedAsset ? `Set a USDC budget and request a fresh ${selectedAsset.underlyingName} comparison. No wallet is required.` : "Search by company name or ticker, or choose one of the verified featured markets above."}</p></div></section>}
-      {comparisonLoading && !round && <section className="comparison-empty comparison-empty--loading" aria-live="polite"><span>↗</span><div><p className="eyebrow">Fetching fresh routes</p><h2>Comparing {selectedAsset?.ticker}</h2><p>Reading coherent Token-2022 multiplier state and current Jupiter quotes for both issuers.</p></div></section>}
+      {comparisonLoading && !round && <section className="comparison-pending" aria-live="polite"><span /><div><strong>Comparing {selectedAsset?.ticker} routes</strong><p>Checking both issuers with current Jupiter and Solana data.</p></div></section>}
       {round && <section className={`results ${comparisonLoading ? "results--loading" : ""}`} id="comparison-detail" aria-busy={comparisonLoading}>
         {comparisonLoading && <div className="scanline"><span /></div>}
-        <div className="results__head"><div><p className="eyebrow">{round.ticker} route comparison</p><h2>Which {round.underlyingName} token gives you more exposure?</h2><p className="results__definition">{budget(round.requestedUsdc)} input · Normalized exposure applies each mint’s current decimals and Token-2022 multiplier. It is a comparison unit—not legal stock ownership.</p></div><div className={`freshness ${stale ? "freshness--stale" : ""}`}><span />{stale ? "Stale · refresh required" : `${secondsLeft}s live · ${age}s old`}</div></div>
-        <div className="routes">{round.candidates.map((candidate) => <CandidateView key={candidate.symbol} candidate={candidate} round={round} stale={stale || comparisonLoading} winner={availableCount === 2 && round.comparison?.winnerSymbol === candidate.symbol} />)}</div>
-        <div className={`verdict ${!round.comparison || stale ? "verdict--muted" : ""}`}><span className="verdict__glyph" aria-hidden>{round.comparison && !stale ? "↗" : "i"}</span><div><p className="eyebrow">{stale ? "Stale comparison" : round.comparison ? "Best quoted route" : "Complete pair required"}</p><strong>{stale ? "These quotes have passed the 30-second display window." : comparisonCopy ?? "One or both issuer routes are unavailable. No winner is declared."}</strong>{round.comparison && !stale ? <div className="verdict__facts"><span><b>+{compact(round.comparison.additionalExposure)}</b> normalized exposure</span><span><b>{selectedValue === null ? "—" : money(selectedValue)}</b> quote-implied difference</span><span><b>{compact(round.comparison.advantageBps, 3)} bps</b> relative advantage</span></div> : <p>Retry this asset without changing your selection or budget.</p>}<p>Estimates only. Issuer rights, liquidity, eligibility, jurisdiction, and final wallet costs can differ.</p></div><button type="button" onClick={() => void runComparison()} disabled={comparisonLoading}>{comparisonLoading ? "Refreshing…" : stale ? "Refresh comparison" : !round.comparison ? "Retry comparison" : "Refresh quotes"}</button></div>
+        <div className={`answer-panel ${!round.comparison ? "answer-panel--incomplete" : ""}`}>
+          <div className="answer-panel__top"><p>{round.ticker} · {budget(round.requestedUsdc)} comparison</p><span className={quoteMayBeOutdated ? "freshness freshness--warning" : "freshness"}>{ageLabel(age)}</span></div>
+          <h2>{answerHeading}</h2>
+          {round.comparison ? <><p className="answer-panel__difference">{round.comparison.label === "equal" ? `Both routes estimate the same ${round.ticker} exposure.` : `You receive ${compact(round.comparison.additionalExposure, 6)} more ${round.ticker} exposure.`}</p><div className="answer-panel__facts"><span><strong>{percentFromBps(round.comparison.advantageBps)}</strong> better quote</span><span><strong>{selectedValue === null ? "—" : money(selectedValue)}</strong> more implied exposure</span></div></> : <p className="answer-panel__difference">One or both issuer routes are unavailable, so no winner is shown.</p>}
+          {quoteMayBeOutdated && <p className="freshness-warning">This quote is over two minutes old and may no longer reflect current routing.</p>}
+          <div className="answer-panel__actions"><button type="button" onClick={() => void runComparison()} disabled={comparisonLoading}>{comparisonLoading ? "Refreshing…" : "Refresh quote"}</button><p>Quote estimate only. Issuer rights, liquidity, eligibility, and final wallet costs can differ.</p></div>
+        </div>
+        <div className="route-section-head"><h3>Route comparison</h3><p>Same USDC input, adjusted for each token’s current multiplier.</p></div>
+        <div className="routes">{round.candidates.map((candidate) => <CandidateView key={candidate.symbol} candidate={candidate} round={round} winner={availableCount === 2 && round.comparison?.winnerSymbol === candidate.symbol} />)}</div>
       </section>}
       <aside className="risk-note" aria-label="Tokenized asset limitations"><p className="eyebrow">Important context</p><strong>Quotes estimate route output—not stock ownership or realized savings.</strong><p>Tokenized assets can differ by issuer rights, liquidity, eligibility, transfer restrictions, and jurisdiction. StoxRoute compares normalized quote output; it does not recommend an issuer or determine whether you may acquire a token.</p></aside>
       {showBoard && <section className={`opportunity-board ${scanLoading ? "opportunity-board--loading" : ""}`} id="market-scanner" aria-live="polite" aria-busy={scanLoading}>

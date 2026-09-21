@@ -1,10 +1,10 @@
 # StoxRoute current status
 
-Last updated: **2026-09-19 15:59 Eastern**, during the nine-asset walletless-product release verification.
+Last updated: **2026-09-20 20:35 Eastern**, after local answer-first comparison redesign and verification.
 
 ## Phase
 
-**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled and is no longer exposed in the public product flow. The local working tree leads with walletless selected-asset comparison across nine independently verified xStocks/Ondo pairs and retains the Opportunity Board as a secondary streamed scan. Local automated verification is green; browser and deployment verification remain in progress at this timestamp.** Demo recording and hackathon form submission are not complete.
+**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled and outside the public product flow. The local working tree now presents a compact asset/budget question, an answer-first walletless comparison across nine independently verified xStocks/Ondo pairs, and the Opportunity Board as a clearly secondary scan. Automated, desktop, and mobile verification are green; these UX changes are not yet committed, pushed, or deployed.** Demo recording and hackathon form submission are not complete.
 
 Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **2026-09-18 16:00 Eastern / 20:00 UTC**. Main track only.
 
@@ -38,13 +38,13 @@ Findings are in [VERIFIED-FINDINGS.md](VERIFIED-FINDINGS.md); they are not runti
 
 ## Next task — requires Trevor
 
-Complete desktop/mobile browser verification, commit and push the green release, then verify the resulting Vercel production deployment before recording the updated demo.
+Review the fresh desktop/mobile result screenshots, then commit, push, and verify the resulting Vercel deployment before recording the updated demo.
 
 ## Unknowns and blockers
 
 | Item | Current truth |
 |---|---|
-| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; local `HEAD` and `origin/main` are `3bafeb4`; the nine-asset public-scope correction is an intentional uncommitted working tree pending final browser verification |
+| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; local `HEAD` and `origin/main` are `8036890`; the answer-first public UX redesign is an intentional uncommitted working tree |
 | Framework/dependency versions/commands | Node 24.13.1, npm 11.8.0, Next 16.3.5, React 19.2.8; commands in README/package.json |
 | Deployment/domain | Production deployment verified at `https://stoxroute.vercel.app`; execution config is persisted as `false` across Vercel environments |
 | Jupiter credentials | No key configured; walletless spike worked, but managed execution currently requires a server-side key |
@@ -182,3 +182,13 @@ Append a concise note and update phase/checklists/next task above:
 - Blocked/unverified at this timestamp: production deployment of this working tree, uploaded demo, and hackathon submission confirmation. Point-in-time provider availability can still leave valid registry pairs visibly unavailable during a scan.
 - Decisions changed: D020 records the public comparison-only scope and strict expanded-registry admission gate.
 - Exact next task: commit and push the green release, verify the resulting public Vercel deployment, then record/upload the updated walletless demo.
+
+### 2026-09-20 20:35 Eastern — answer-first comparison UX working tree
+
+- Implemented: replaced the hero/featured-market/selected-asset stack with one compact searchable asset and USDC budget form, six popular-ticker chips, one Compare action, and a secondary “Scan all 9 supported markets” action. Results now lead with the computed issuer winner, contextual exposure difference, percentage advantage, quote-implied difference, and non-blocking age before two simplified route cards. Default exposure is rounded to five places; full precision and normalization evidence remain in View details.
+- Freshness: public results preserve the displayed winner and values after the 30-second execution window, show “Updated … ago,” and add only a light two-minute routing warning. The hidden execution path still uses `displayExpiresAt` and its strict short-lived checks unchanged.
+- Checks run and actual results: `npm run typecheck` passed; `npm run lint` passed; `npm test` passed 59/59 across 14 files; `npm run build` passed with the existing route split. The browser-smoke helper passed at 1440×1000 and 390×844, streamed all nine scanner rows, found no horizontal overflow or public transaction controls, and recorded no console errors.
+- Browser evidence: the entire form fit inside both initial viewports. Fresh NVDA comparisons showed a real current xStocks lead in both captures, with calculated differences and simplified route values; current provider throttling left unavailable scanner rows visible and unranked. Fresh result screenshots replaced `docs/screenshots/stoxroute-desktop.png` and `docs/screenshots/stoxroute-mobile.png`.
+- Transaction truth: calculations, registry data, backend security, wallet code, and execution infrastructure were not changed. Execution remained server-disabled. No order or transaction was prepared, signed, submitted, or confirmed.
+- Decisions changed: D021 separates durable public quote display from strict hidden execution freshness and records the answer-first information architecture.
+- Exact next task: review the screenshots, commit and push the UX release, verify production, then record the updated demo.

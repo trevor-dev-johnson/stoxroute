@@ -6,7 +6,7 @@
 
 StoxRoute lets a user choose from nine verified stocks and ETFs and compare two issuer routes for one exact USDC input. It normalizes every output with current Token-2022 Scaled UI state and explains the exposure and quote-implied value difference. A bounded multi-asset scanner remains available as a secondary view.
 
-![StoxRoute desktop scanner](docs/screenshots/stoxroute-desktop.png)
+![StoxRoute desktop answer-first comparison](docs/screenshots/stoxroute-desktop.png)
 
 ## The problem
 
@@ -14,7 +14,7 @@ Tokenized representations of the same stock or ETF can use different decimals, m
 
 ## The solution
 
-StoxRoute searches only its verified registry, gives the selected issuer pair one equal USDC budget, reads the pair from coherent Solana state, and fetches both routes together. A complete fresh result shows the leading issuer, both normalized exposures, absolute difference, relative basis-point difference, quote-implied dollar difference, routers, availability, and age. The optional Opportunity Board repeats the same contract across the bounded registry and ranks only complete pairs.
+StoxRoute searches only its verified registry, gives the selected issuer pair one equal USDC budget, reads the pair from coherent Solana state, and fetches both routes together. The answer leads with the better quoted issuer, contextual exposure difference, percentage advantage, quote-implied value difference, and age. Simplified route cards follow, with full normalization evidence available on demand. The optional Opportunity Board repeats the same contract across the bounded registry and ranks only complete pairs.
 
 The bounded production registry contains:
 
@@ -51,9 +51,9 @@ No live transaction has been prepared, signed, submitted, or confirmed during th
 
 1. Open the app without connecting a wallet.
 2. Search by ticker/company name or choose a curated featured market.
-3. Choose a preset or enter one exact USDC budget, then select **Compare routes**.
-4. Read the side-by-side issuer result and the fresh complete-pair verdict. Expand **View route details** to inspect the ISIN, mint, raw output, multiplier, cache status, router, fees, and quote time.
-5. Optionally select **Scan all supported markets** to stream the bounded Opportunity Board. Complete pairs rank first; partial and unavailable rows remain visible but unranked.
+3. Enter one exact USDC budget, then select **Compare**.
+4. Read the answer-first winner, exposure difference, percentage advantage, and quote-implied value before the two simplified route cards. Expand **View details** for the ISIN, mint, full-precision output, multiplier, cache status, fees, and quote time.
+5. Optionally select **Scan all 9 supported markets** to open the bounded secondary scanner. Complete pairs rank first; partial and unavailable rows remain visible but unranked.
 6. Select a board row to bring that market back into the primary comparison workspace.
 
 Each result has a 30-second reading window. Run a fresh scan before relying on an expired result.
@@ -144,9 +144,9 @@ The production dependency audit currently reports 12 moderate transitive advisor
 
 ## Demo guidance
 
-Choose a market, run a `$1,000` comparison, and explain the normalized exposure and quote-implied difference. Then optionally scan all supported markets and point out incremental progress and any honest partial result. Say explicitly that the values are estimates and trading execution is not currently available. See [docs/SUBMISSION.md](docs/SUBMISSION.md).
+Choose a market, run a `$1,000` comparison, and explain the answer-first winner, exposure difference, percentage advantage, and quote-implied difference. Then optionally scan all supported markets and point out incremental progress and any honest partial result. Say explicitly that the values are estimates and trading execution is not currently available. See [docs/SUBMISSION.md](docs/SUBMISSION.md).
 
-![StoxRoute mobile scanner](docs/screenshots/stoxroute-mobile.png)
+![StoxRoute mobile answer-first comparison](docs/screenshots/stoxroute-mobile.png)
 
 ## Limitations
 
