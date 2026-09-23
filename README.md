@@ -43,20 +43,20 @@ Exact issuer sources and live-mint verification are in [docs/ASSET-REGISTRY.md](
 - Wallet Standard discovery through Solana Wallet Adapter, including Phantom when installed.
 - Server-disabled execution infrastructure with wallet proof, optional allowlist, fresh taker order, signed intent binding, decoded transaction validation, simulation, and confirmed-chain receipt accounting.
 - A repeatable official-source verifier that joins on underlying ISIN, validates coherent mint state, and requires two positive live quotes before registry inclusion.
-- 59 domain, registry, public-scope, asset-search, scanner, accessibility, HTTP-boundary, and execution-boundary tests.
+- 60 domain, registry, public-scope, asset-search, scanner, accessibility, HTTP-boundary, and execution-boundary tests.
 
 No live transaction has been prepared, signed, submitted, or confirmed during the scanner work. Execution remains disabled pending separate semantic validation and independently eligible tester verification.
 
 ## Product walkthrough
 
 1. Open the app without connecting a wallet.
-2. Search by ticker/company name or choose a curated featured market.
+2. Search by ticker/company name or choose a popular ticker chip.
 3. Enter one exact USDC budget, then select **Compare**.
 4. Read the answer-first winner, exposure difference, percentage advantage, and quote-implied value before the two simplified route cards. Expand **View details** for the ISIN, mint, full-precision output, multiplier, cache status, fees, and quote time.
 5. Optionally select **Scan all 9 supported markets** to open the bounded secondary scanner. Complete pairs rank first; partial and unavailable rows remain visible but unranked.
 6. Select a board row to bring that market back into the primary comparison workspace.
 
-Each result has a 30-second reading window. Run a fresh scan before relying on an expired result.
+Public comparisons preserve the displayed result and show a non-blocking age. After two minutes, StoxRoute warns that the quote may no longer reflect current routing and offers **Refresh quote**. The tighter 30-second freshness boundary applies only to the hidden, server-disabled execution path.
 
 ## Architecture
 
@@ -88,7 +88,8 @@ Historical evidence under `docs/evidence/` and `research/` is never used as a ru
 - Quote responses more than two seconds apart are not compared.
 - Confirmed chain time more than 120 seconds behind or 60 seconds ahead of wall time is rejected.
 - Mint state may cache for at most 60 seconds and never across a scheduled multiplier transition. Results explicitly say `live` or `cached`; quotes are always current provider requests.
-- Results expire after 30 seconds in the UI.
+- Public comparison values remain visible with an age timestamp; after two minutes the UI warns that current routing may have changed.
+- The hidden execution path keeps its separate 30-second review boundary and other strict freshness checks.
 
 ## Safety model
 

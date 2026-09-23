@@ -60,10 +60,39 @@ if (await evaluate("Boolean(document.querySelector('.wallet-adapter-button, .exe
 if (!await evaluate("document.body.innerText.includes('Trading execution is not currently available.')")) {
   throw new Error("The restrained footer disclosure is missing");
 }
-await evaluate("document.querySelector('.popular-tickers button')?.click()");
+await evaluate("[...document.querySelectorAll('.popular-tickers button')].find((button) => button.textContent?.trim() === 'AAPL')?.click()");
 if (await evaluate("Boolean(document.querySelector('.compare-button')?.disabled)")) {
   throw new Error("Selecting a popular market did not enable comparison");
 }
+await evaluate(`(() => {
+  window.__stoxrouteQuoteRequestCount = 0;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = (...args) => {
+    if (String(args[0]).includes('/api/quotes')) window.__stoxrouteQuoteRequestCount += 1;
+    return originalFetch(...args);
+  };
+  const input = document.querySelector('#amount');
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  setter.call(input, '1e3');
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+})()`);
+await evaluate("document.querySelector('.compare-button')?.click()");
+await wait(150);
+if (!await evaluate("document.querySelector('#amount')?.value === '1e3'")) {
+  throw new Error("Scientific notation was transformed instead of preserved for validation");
+}
+if (!await evaluate("document.querySelector('#amount-error')?.innerText.includes('plain USDC amount')")) {
+  throw new Error("Scientific notation did not produce the visible budget validation error");
+}
+if (await evaluate("window.__stoxrouteQuoteRequestCount !== 0")) {
+  throw new Error("Scientific notation reached the quote endpoint");
+}
+await evaluate(`(() => {
+  const input = document.querySelector('#amount');
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  setter.call(input, '1,000');
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+})()`);
 await evaluate("document.querySelector('.compare-button')?.click()");
 for (let attempt = 0; attempt < 120; attempt += 1) {
   if (await evaluate("Boolean(document.querySelector('.results, .notice'))")) break;

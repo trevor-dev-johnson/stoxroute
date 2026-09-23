@@ -8,6 +8,7 @@ import { quoteImpliedDollarAdvantage, sortOpportunities } from "@/lib/routing/op
 import type { ComparisonRound } from "@/lib/routing/round";
 import { assetForTicker, SUPPORTED_ASSETS, type SupportedAsset } from "@/lib/stocks/registry";
 import { assetSearchLabel, matchingSupportedAssets } from "@/lib/ui/asset-search";
+import { canonicalBudgetInput, formattedBudgetInput, parseBudgetInput } from "@/lib/ui/budget-input";
 
 type AvailableCandidate = Extract<ComparisonRound["candidates"][number], { status: "available" }>;
 type SortMode = "bps" | "dollars";
@@ -28,19 +29,12 @@ function compact(value: string, places = 8) {
   } catch { return value; }
 }
 
-function canonicalAmount(value: string) { return value.replace(/,/g, "").trim(); }
-function formattedAmount(value: string) {
-  const canonical = canonicalAmount(value);
-  if (!canonical || !/^(?:0|[1-9]\d*)(?:\.\d{0,6})?$/.test(canonical)) return value;
-  const [whole, fraction] = canonical.split(".");
-  return `${whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${fraction !== undefined ? `.${fraction}` : ""}`;
-}
 function money(value: string, places = 2) {
   const decimal = new Decimal(value);
   if (decimal.gt(0) && decimal.lt("0.01")) return "<$0.01";
   return `$${compact(decimal.toFixed(), places)}`;
 }
-function budget(value: string) { return `$${compact(canonicalAmount(value), 6)}`; }
+function budget(value: string) { return `$${compact(canonicalBudgetInput(value), 6)}`; }
 function shortMint(mint: string) { return `${mint.slice(0, 6)}…${mint.slice(-6)}`; }
 function exposureLabel(round: ComparisonRound) { return `Estimated ${round.ticker} exposure`; }
 function ageLabel(seconds: number) {
@@ -50,14 +44,6 @@ function ageLabel(seconds: number) {
   return `Updated ${minutes} minute${minutes === 1 ? "" : "s"} ago`;
 }
 function percentFromBps(value: string) { return `${compact(new Decimal(value).div(100).toFixed(), 2)}%`; }
-function validAmount(value: string): string | null {
-  const canonical = canonicalAmount(value);
-  if (!/^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(canonical)) return "Enter a plain USDC amount with up to 6 decimals.";
-  try { const amount = new Decimal(canonical); if (amount.lt(1) || amount.gt(10_000)) return "Amount must be between $1 and $10,000 USDC."; }
-  catch { return "Enter a valid USDC amount."; }
-  return null;
-}
-
 function AssetSelector({ query, selected, onQueryChange, onSelect }: { query: string; selected: SupportedAsset | null; onQueryChange: (value: string) => void; onSelect: (asset: SupportedAsset) => void }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -138,11 +124,11 @@ export default function Home() {
   function clearComparison() { comparisonRequest.current?.abort(); comparisonRequest.current = null; comparisonSequence.current += 1; setRound(null); setComparisonError(null); setComparisonLoading(false); }
   function selectAsset(asset: SupportedAsset) { if (asset.ticker !== selectedTicker) clearComparison(); setSelectedTicker(asset.ticker); setAssetQuery(assetSearchLabel(asset)); setAmountError(null); }
   function changeAssetQuery(value: string) { if (selectedAsset && value !== assetSearchLabel(selectedAsset)) { clearComparison(); setSelectedTicker(null); setAmountError(null); } setAssetQuery(value); }
-  function changeAmount(value: string) { setAmount(value.replace(/[^\d.,]/g, "")); setAmountError(null); clearComparison(); }
+  function changeAmount(value: string) { setAmount(value); setAmountError(null); clearComparison(); }
 
   async function runComparison(event?: React.FormEvent<HTMLFormElement>) {
-    event?.preventDefault(); const invalid = validAmount(amount); setAmountError(invalid); if (!selectedAsset || invalid) return;
-    const requestedUsdc = canonicalAmount(amount); const sequence = ++comparisonSequence.current; comparisonRequest.current?.abort(); const controller = new AbortController(); comparisonRequest.current = controller;
+    event?.preventDefault(); const parsed = parseBudgetInput(amount); setAmountError(parsed.ok ? null : parsed.message); if (!selectedAsset || !parsed.ok) return;
+    const requestedUsdc = parsed.amount; const sequence = ++comparisonSequence.current; comparisonRequest.current?.abort(); const controller = new AbortController(); comparisonRequest.current = controller;
     setComparisonLoading(true); setComparisonError(null);
     try {
       const response = await fetch("/api/quotes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ticker: selectedAsset.ticker, amount: requestedUsdc }), signal: controller.signal });
@@ -153,11 +139,11 @@ export default function Home() {
   }
 
   async function runScan() {
-    const invalid = validAmount(amount); setAmountError(invalid); if (invalid) return; setShowBoard(true);
+    const parsed = parseBudgetInput(amount); setAmountError(parsed.ok ? null : parsed.message); if (!parsed.ok) return; setShowBoard(true);
     const sequence = ++scanSequence.current; scanRequest.current?.abort(); const controller = new AbortController(); scanRequest.current = controller;
     setScanLoading(true); setScanError(null); setScan(null); setOpportunities([]); setProgress({ completed: 0, total: SUPPORTED_ASSETS.length }); window.setTimeout(() => document.getElementById("market-scanner")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
     try {
-      const response = await fetch("/api/opportunities", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ amount: canonicalAmount(amount) }), signal: controller.signal });
+      const response = await fetch("/api/opportunities", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ amount: parsed.amount }), signal: controller.signal });
       if (!response.ok) { const payload = await response.json(); throw new Error(payload.message ?? "Opportunity scan failed"); }
       if (!response.body) throw new Error("The scan stream was unavailable.");
       const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = "";
@@ -173,7 +159,7 @@ export default function Home() {
 
   function openOpportunity(opportunity: AssetOpportunity) {
     const asset = assetForTicker(opportunity.ticker); if (!asset) return;
-    setSelectedTicker(asset.ticker); setAssetQuery(assetSearchLabel(asset)); setAmount(formattedAmount(opportunity.round?.requestedUsdc ?? amount)); setRound(opportunity.round); setComparisonError(null);
+    setSelectedTicker(asset.ticker); setAssetQuery(assetSearchLabel(asset)); setAmount(formattedBudgetInput(opportunity.round?.requestedUsdc ?? amount)); setRound(opportunity.round); setComparisonError(null);
     setClock(Date.now());
     window.setTimeout(() => document.getElementById(opportunity.round ? "comparison-detail" : "comparison-form")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
   }
@@ -191,7 +177,7 @@ export default function Home() {
     <section className="workspace" id="top">
       <div className="intro"><h1>Find the better tokenized-stock route.</h1><p className="intro__copy">Choose a market and budget. StoxRoute compares both verified issuer routes using current quotes.</p></div>
       <section className="compare-workspace" id="comparison-form" aria-label="Find the better tokenized-stock route">
-        <div className="comparison-form-grid"><AssetSelector query={assetQuery} selected={selectedAsset} onQueryChange={changeAssetQuery} onSelect={selectAsset} /><ScanForm amount={amount} asset={selectedAsset} loading={comparisonLoading} invalidMessage={amountError} onAmountChange={changeAmount} onAmountBlur={() => setAmount(formattedAmount(amount))} onSubmit={runComparison} /></div>
+        <div className="comparison-form-grid"><AssetSelector query={assetQuery} selected={selectedAsset} onQueryChange={changeAssetQuery} onSelect={selectAsset} /><ScanForm amount={amount} asset={selectedAsset} loading={comparisonLoading} invalidMessage={amountError} onAmountChange={changeAmount} onAmountBlur={() => setAmount(formattedBudgetInput(amount))} onSubmit={runComparison} /></div>
         <div className="popular-tickers" aria-label="Popular supported markets"><span>Popular</span>{POPULAR_TICKERS.map((ticker) => { const asset = assetForTicker(ticker); return asset ? <button type="button" key={ticker} aria-pressed={selectedTicker === ticker} onClick={() => selectAsset(asset)}>{ticker}</button> : null; })}</div>
         <button className="scan-all-action" type="button" disabled={scanLoading} onClick={() => void runScan()}>{scanLoading ? `Scanning ${progress.completed} of ${progress.total}…` : `Scan all ${SUPPORTED_ASSETS.length} supported markets`}<span aria-hidden>↓</span></button>
       </section>

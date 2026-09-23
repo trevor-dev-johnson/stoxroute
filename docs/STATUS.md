@@ -1,12 +1,12 @@
 # StoxRoute current status
 
-Last updated: **2026-09-20 20:35 Eastern**, after local answer-first comparison redesign and verification.
+Last updated: **2026-09-23**, after the final judge-readiness audit and pre-submission corrections.
 
 ## Phase
 
-**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled and outside the public product flow. The local working tree now presents a compact asset/budget question, an answer-first walletless comparison across nine independently verified xStocks/Ondo pairs, and the Opportunity Board as a clearly secondary scan. Automated, desktop, and mobile verification are green; these UX changes are not yet committed, pushed, or deployed.** Demo recording and hackathon form submission are not complete.
+**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled and outside the public product flow. The public release presents a compact asset/budget question, an answer-first walletless comparison across nine independently verified xStocks/Ondo pairs, and the Opportunity Board as a secondary scan. The pre-submission correction preserves literal budget input so unsupported forms such as `1e3` are rejected instead of rewritten, raises mobile ticker targets to 44px, and aligns submission documentation with the current product.** Demo recording and hackathon form submission are not complete.
 
-Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **2026-09-18 16:00 Eastern / 20:00 UTC**. Main track only.
+Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **Friday, September 25, 2026 at 4:00 PM Eastern**. Main track only.
 
 ## Completed evidence
 
@@ -19,7 +19,7 @@ Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. D
 - [x] Backpack candidates set aside after three zero-supply observations.
 - [x] NVDA, TSLA, and SPY xStocks/Ondo mappings independently reverified from current issuer sources.
 - [x] All six current Solana mints verified as initialized, unpaused Token-2022 mints with matching metadata, expected 8/9 decimals, and Scaled UI state at confirmed slot `448126418`.
-- [x] Multi-asset streaming scan, progress, failure isolation, ranking, per-asset detail, and 30-second freshness implemented.
+- [x] Multi-asset streaming scan, progress, failure isolation, ranking, per-asset detail, durable public quote display, and a two-minute public routing warning implemented; the tighter review window remains execution-only.
 - [x] AAPL, MSFT, META, AMZN, GOOGL, and QQQ added after official-source ISIN matching, exact mint validation, confirmed onchain decimals/multipliers, and positive live Jupiter quotes on both routes.
 - [x] Repeatable official-source registry verifier implemented; COIN, PLTR, NFLX, and GLD remain excluded because identity or live-route requirements did not fully pass in the verification window.
 
@@ -38,13 +38,13 @@ Findings are in [VERIFIED-FINDINGS.md](VERIFIED-FINDINGS.md); they are not runti
 
 ## Next task — requires Trevor
 
-Review the fresh desktop/mobile result screenshots, then commit, push, and verify the resulting Vercel deployment before recording the updated demo.
+Record and upload the updated 60–90 second walletless comparison demo, verify every link signed out, and submit the hackathon form before the official deadline.
 
 ## Unknowns and blockers
 
 | Item | Current truth |
 |---|---|
-| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; local `HEAD` and `origin/main` are `8036890`; the answer-first public UX redesign is an intentional uncommitted working tree |
+| Git remote/branch/commit/working tree | GitHub `trevor-dev-johnson/stoxroute`, `main`; the answer-first release and audited pre-submission correction are on the release branch, with the exact final commit recorded in the release report |
 | Framework/dependency versions/commands | Node 24.13.1, npm 11.8.0, Next 16.3.5, React 19.2.8; commands in README/package.json |
 | Deployment/domain | Production deployment verified at `https://stoxroute.vercel.app`; execution config is persisted as `false` across Vercel environments |
 | Jupiter credentials | No key configured; walletless spike worked, but managed execution currently requires a server-side key |
@@ -115,7 +115,7 @@ Append a concise note and update phase/checklists/next task above:
 - Implemented for M4: three-step walletless walkthrough; clearer leading-quote label; share-equivalent, quote-implied dollar, and bps verdict; corrected stale/partial refresh action; improved loading/error copy; visible tokenized-asset restrictions; polished metadata; custom SVG favicon; reproducible/static social preview; production desktop/mobile screenshots; comprehensive README; concise submission copy and 60–90 second demo script.
 - Checks run and actual results: `npm run typecheck` passed; `npm run lint` passed; `npm test` passed 37/37 across 7 files; `npm run build` passed with `/` and `/opengraph-image` static plus six dynamic API routes. Production browser checks at 1440×1000 and 390×844 covered empty, loading/live, invalid input, details, route selection, stale refresh, disabled purchasing, visible restrictions, no horizontal overflow, and an empty warning/error console.
 - Live evidence: walletless production-browser quote rounds completed successfully; current winners varied by live response and were not hardcoded. Execution status remained disabled. No wallet was authorized and no transaction was prepared, signed, submitted, or confirmed.
-- Official-page discrepancy: on September 16 the Stocklana header/countdown showed September 25, while its embedded rules still said September 18 at 4:00 PM Eastern. Continue using September 18 as the safe deadline.
+- Official-page discrepancy: on September 16 the Stocklana header/countdown showed September 25, while its embedded rules still said September 18 at 4:00 PM Eastern. The official page was rechecked on September 23 and now consistently states September 25 at 4:00 PM Eastern; that current rule supersedes this historical discrepancy.
 - Blocked/unverified: judge-accessible deployment/domain, recorded/uploaded demo, hackathon registration/form confirmation, eligible independent tester, live taker order/simulation, wallet authorization, submission, and confirmed receipt.
 - Decisions changed: D016 records the quote-implied value explanation without realized-savings language.
 - Exact next task: Trevor deploys with the server gate off, records/uploads the prepared demo, and submits the links; the eligible-tester transaction remains a separate optional strengthening step.
@@ -192,3 +192,11 @@ Append a concise note and update phase/checklists/next task above:
 - Transaction truth: calculations, registry data, backend security, wallet code, and execution infrastructure were not changed. Execution remained server-disabled. No order or transaction was prepared, signed, submitted, or confirmed.
 - Decisions changed: D021 separates durable public quote display from strict hidden execution freshness and records the answer-first information architecture.
 - Exact next task: review the screenshots, commit and push the UX release, verify production, then record the updated demo.
+
+### 2026-09-23 15:16 Eastern — audited pre-submission correction
+
+- Implemented: preserved literal budget input through validation so `1e3` remains visible, produces the plain-USDC error, and cannot construct a quote request; added a focused regression plus the same no-request assertion to the browser-smoke helper; raised mobile popular-ticker targets to 44px; and aligned the README, deadline record, and demo script with the current comparison-first release.
+- Checks run and actual results: `npm run typecheck` passed; `npm run lint` passed; `npm test` passed 60/60 across 15 files; `npm run build` passed with the existing static/dynamic route split; and `node --check scripts/browser-smoke.mjs` passed.
+- Browser evidence: at desktop width, `1e3` remained unchanged, showed the visible validation error, rendered no pending/result state, and did not produce a quote request; a fresh AAPL `$1,000` comparison returned both live routes and an answer-first calculated verdict. At 390×844, the form and all six popular ticker controls fit without horizontal overflow, the controls used the 44px mobile minimum, and the browser warning/error log was empty.
+- Transaction truth: `/api/execution/status` remained `enabled:false` and a direct challenge attempt returned HTTP 403. No order or transaction was prepared, signed, submitted, or confirmed.
+- Exact next task: record and upload the prepared 60–90 second demo, verify the public links signed out, and submit the hackathon form before Friday, September 25, 2026 at 4:00 PM Eastern.

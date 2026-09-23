@@ -1,12 +1,12 @@
 # Stocklana requirements and submission
 
-Checked again: **2026-09-16** against the [official Stocklana page](https://hackathons.solana.com/hackathons/stocklana). The page currently conflicts with itself: its header shows **September 25, 2026** and a nine-day countdown, while the embedded rules still say **Friday September 18 at 4:00 PM Eastern**. Treat the earlier September 18 deadline as controlling unless the organizer confirms the extension, and submit as early as possible.
+Checked again: **2026-09-23** against the [official Stocklana page](https://hackathons.solana.com/hackathons/stocklana). The page header and rules now agree that submissions close **Friday, September 25, 2026 at 4:00 PM Eastern**.
 
 ## Official requirements
 
 | Item | Current rule |
 |---|---|
-| Deadline | Conflicting official display: header Sep 25; rules Sep 18 at 4:00 PM Eastern. Use Sep 18 as the safe deadline. |
+| Deadline | Friday, September 25, 2026 at 4:00 PM Eastern. |
 | Judging | Through Oct 2, 2026 |
 | Main track | $100,000, awarded by Solana Foundation |
 | Current total displayed | $121,000 across the main track and four sponsor tracks |

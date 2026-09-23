@@ -217,7 +217,7 @@ footer { min-height:76px; border-top:1px solid var(--line); display:flex; align-
   .compare-button { padding:0 14px; }
   .popular-tickers { gap:6px; margin-top:14px; }
   .popular-tickers > span { flex-basis:100%; }
-  .popular-tickers button { min-height:40px; padding:0 12px; }
+  .popular-tickers button { min-height:44px; padding:0 12px; }
   .scan-all-action { min-height:42px; margin-top:10px; }
   .results { margin-top:30px; }
   .answer-panel { padding:22px 18px; }
