@@ -1,14 +1,14 @@
 # StoxRoute submission kit
 
-Updated: 2026-09-23. This copy reflects the answer-first walletless comparison and optional nine-asset secondary scanner. Trading execution is not part of the public product flow.
+Updated: 2026-09-23. This copy reflects the answer-first, selected-asset walletless comparison and read-only supported-market registry. Trading execution is not part of the public product flow.
 
 ## Concise submission description
 
-StoxRoute is a walletless issuer-route comparison tool for tokenized stocks on Solana. Choose one of nine verified stocks or ETFs, set one USDC budget, and compare its xStocks/Ondo routes after normalizing live Jupiter output with current Token-2022 multiplier state. Partial failures, issuer identity, freshness, routers, and restrictions stay visible. A secondary scan ranks only complete fresh pairs.
+StoxRoute is a walletless issuer-route comparison tool for tokenized stocks on Solana. Choose one of nine verified stocks or ETFs, set one USDC budget, and compare its xStocks/Ondo routes after normalizing live Jupiter output with current Token-2022 multiplier state. Partial failures, issuer identity, freshness, routers, and restrictions stay visible. The supported-market registry can be browsed without generating live quote traffic.
 
 ## Short tagline
 
-One budget. Every verified pair.
+One asset. Every verified route.
 
 ## Suggested category
 
@@ -37,7 +37,7 @@ Main track — Trading / Infrastructure.
 **1:17–1:25 — Close**
 “Trading execution is not currently available. StoxRoute turns one budget into an honest, inspectable route comparison.”
 
-If provider conditions are healthy after the primary recording, optionally add a brief secondary shot of **Scan all 9 supported markets**. Do not let the scanner replace the selected-asset comparison or extend the final cut beyond 90 seconds.
+Optionally open **Browse supported markets** for a brief, quiet shot of the verified registry. It does not request additional live quotes.
 
 ## Recording checklist
 
@@ -46,7 +46,7 @@ If provider conditions are healthy after the primary recording, optionally add a
 - Start on the empty state, choose Apple or the healthiest verified asset, enter `$1,000`, and select **Compare**.
 - Record the live result that actually appears; never script a particular winner.
 - Expand **View details** on one route and pause on the issuer, mint, multiplier, router, and quote time.
-- Include the scanner only if current provider conditions produce a useful result; keep it secondary.
+- Optionally open **Browse supported markets** to show the nine verified pairs without creating provider traffic.
 - Pause briefly on the restrictions notice and the single footer execution disclosure.
 - Avoid API keys, terminal windows, browser extensions, bookmarks, personal notifications, or eligibility records.
 - Export at 1080p, check audio, and verify every linked artifact in a signed-out session.

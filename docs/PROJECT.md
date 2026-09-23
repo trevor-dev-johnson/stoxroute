@@ -17,7 +17,7 @@ The distinct work is company-to-instrument selection and normalization. Jupiter 
 | Tier | Included | Completion standard |
 |---|---|---|
 | First runnable slice | NVIDIA, NVDAx/NVDAon, USDC, live comparison and failure states | A real quote pair is normalized and explained on screen |
-| Target hackathon MVP | Asset-first walletless comparison plus a secondary bounded scanner | Every supported pair passes issuer identity, live mint-state, and two-route quote verification |
+| Target hackathon MVP | Asset-first walletless comparison plus a read-only verified registry | Every supported pair passes issuer identity, live mint-state, and two-route quote verification |
 | Current expansion | NVDA, TSLA, SPY, AAPL, MSFT, META, AMZN, GOOGL, and QQQ | Exact official-source overlap plus positive live routes |
 | Deferred | Everything listed under non-goals | Do not spend the sprint on it |
 
@@ -30,7 +30,7 @@ Quote mode is useful and can be demonstrated honestly if execution remains block
 3. Fetch both quotes as one comparison round. Display the actual issuer/token and estimated NVIDIA share-equivalent exposure.
 4. If both are current and comparable, explain the larger exposure and the percentage difference. If costs are unresolved, explicitly limit the comparison to quote output before unverified wallet costs.
 5. Allow the user to inspect the issuer, mint, fees, multiplier state, router, and restrictions. The “best quoted exposure” label is not a judgment about legal rights or issuer safety.
-6. Keep the market-wide scan secondary and disclose once in the footer that trading execution is not currently available.
+6. Let users browse supported registry metadata without requesting quotes, and disclose once in the footer that trading execution is not currently available.
 
 ## Screen specification
 

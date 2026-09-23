@@ -7,6 +7,18 @@ import type { QuoteResult } from "../src/lib/providers/jupiter";
 const success = (id: string): QuoteResult => ({ ok: true, rawOutAmount: "1", router: "jupiterz", quoteRequestId: id, startedAt: new Date(0).toISOString(), finishedAt: new Date(1).toISOString(), finishedAtMs: 1, fees: {} });
 
 describe("round provider safety", () => {
+  it("requests only the two issuer routes for the selected asset", async () => {
+    const selected = SUPPORTED_ASSETS.find((asset) => asset.ticker === "AAPL")!;
+    const fetcher = vi.fn(async (candidate) => success(candidate.symbol));
+
+    await fetchPairWithRetry(selected.candidates, "1000000000", fetcher);
+
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher.mock.calls.map(([candidate]) => candidate.mint)).toEqual(
+      selected.candidates.map((candidate) => candidate.mint),
+    );
+  });
+
   it("retries the whole pair once after a rate limit with bounded backoff", async () => {
     const responses: QuoteResult[] = [{ ok: false, code: "rate_limited", message: "limited", retryAfterMs: 9_000 }, success("old-sibling"), success("fresh-left"), success("fresh-right")];
     const fetcher = vi.fn(async () => responses.shift()!);

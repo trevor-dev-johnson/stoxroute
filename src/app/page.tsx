@@ -3,14 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Decimal from "decimal.js";
 import { ScanForm } from "@/components/scan-form";
-import type {
-  AssetOpportunity,
-  OpportunityScan,
-} from "@/lib/routing/opportunities";
-import {
-  quoteImpliedDollarAdvantage,
-  sortOpportunities,
-} from "@/lib/routing/opportunities";
 import type { ComparisonRound } from "@/lib/routing/round";
 import {
   assetForTicker,
@@ -31,18 +23,6 @@ type AvailableCandidate = Extract<
   ComparisonRound["candidates"][number],
   { status: "available" }
 >;
-type SortMode = "bps" | "dollars";
-type StreamEvent =
-  | { type: "start"; total: number }
-  | {
-      type: "asset";
-      completed: number;
-      total: number;
-      opportunity: AssetOpportunity;
-    }
-  | { type: "complete"; scan: OpportunityScan }
-  | { type: "error"; message: string };
-
 const POPULAR_TICKERS = [
   "NVDA",
   "AAPL",
@@ -88,6 +68,19 @@ function ageLabel(seconds: number) {
 }
 function percentFromBps(value: string) {
   return `${compact(new Decimal(value).div(100).toFixed(), 2)}%`;
+}
+function quoteImpliedDollarAdvantage(round: ComparisonRound): string | null {
+  if (!round.comparison) return null;
+  if (!round.comparison.winnerSymbol) return "0";
+  const winner = round.candidates.find(
+    (candidate) =>
+      candidate.status === "available" &&
+      candidate.symbol === round.comparison?.winnerSymbol,
+  );
+  if (!winner || winner.status !== "available") return null;
+  return new Decimal(round.comparison.additionalExposure)
+    .mul(winner.usdcPerShareEquivalent)
+    .toFixed();
 }
 function AssetSelector({
   query,
@@ -354,94 +347,35 @@ function CandidateView({
   );
 }
 
-function OpportunityRow({
-  opportunity,
-  now,
-  selected,
-  onSelect,
-}: {
-  opportunity: AssetOpportunity;
-  now: number;
-  selected: boolean;
-  onSelect: (opportunity: AssetOpportunity) => void;
-}) {
-  const round = opportunity.round;
-  const age = round
-    ? Math.max(0, Math.floor((now - Date.parse(round.createdAt)) / 1_000))
-    : null;
-  const exposures = round?.candidates.map((candidate) =>
-    candidate.status === "available"
-      ? `${candidate.symbol} ${compact(candidate.exposure, 6)}`
-      : `${candidate.symbol} —`,
-  );
-  const routers = round?.candidates
-    .filter(
-      (candidate): candidate is AvailableCandidate =>
-        candidate.status === "available",
-    )
-    .map((candidate) => candidate.router);
-  const status =
-    opportunity.status === "complete"
-      ? "Complete"
-      : opportunity.status === "partial"
-        ? "Partial"
-        : "Unavailable";
+export function SupportedMarkets() {
   return (
-    <button
-      className={`opportunity-row ${selected ? "opportunity-row--selected" : ""}`}
-      type="button"
-      onClick={() => onSelect(opportunity)}
-    >
-      <span className="opportunity-row__asset">
-        <strong>{opportunity.underlyingName}</strong>
-        <small>
-          {opportunity.ticker} ·{" "}
-          {opportunity.instrumentType === "etf" ? "ETF" : "Stock"}
-        </small>
-      </span>
-      <span>
-        <small>Winning issuer</small>
-        <strong>
-          {opportunity.status === "complete"
-            ? (opportunity.winningIssuer ?? "Equal")
-            : "—"}
-        </strong>
-      </span>
-      <span>
-        <small>Estimated exposure</small>
-        <strong>{exposures?.join(" / ") ?? "No live routes"}</strong>
-      </span>
-      <span>
-        <small>Advantage</small>
-        <strong>
-          {opportunity.status === "complete" &&
-          opportunity.advantageBps !== null
-            ? `+${compact(opportunity.absoluteExposureAdvantage ?? "0", 6)} · ${compact(opportunity.advantageBps, 3)} bps`
-            : "Not ranked"}
-        </strong>
-      </span>
-      <span>
-        <small>Quote-implied difference</small>
-        <strong>
-          {opportunity.status === "complete" &&
-          opportunity.quoteImpliedDollarAdvantage !== null
-            ? money(opportunity.quoteImpliedDollarAdvantage)
-            : "—"}
-        </strong>
-      </span>
-      <span>
-        <small>Router</small>
-        <strong>{routers?.join(" / ") || "—"}</strong>
-      </span>
-      <span
-        className={`opportunity-row__status opportunity-row__status--${opportunity.status}`}
-      >
-        <small>{status}</small>
-        <strong>
-          {age === null ? (opportunity.message ?? "No result") : ageLabel(age)}
-        </strong>
-      </span>
-    </button>
+    <details className="supported-markets">
+      <summary>
+        <span>Browse supported markets</span>
+        <small>{SUPPORTED_ASSETS.length} verified</small>
+      </summary>
+      <div className="supported-markets__list">
+        {SUPPORTED_ASSETS.map((asset) => (
+          <article key={asset.ticker}>
+            <span className="supported-markets__ticker">{asset.ticker}</span>
+            <span className="supported-markets__identity">
+              <strong>{asset.underlyingName}</strong>
+              <small>{asset.instrumentType === "etf" ? "ETF" : "Stock"}</small>
+            </span>
+            <span className="supported-markets__issuers">
+              {asset.candidates.map((candidate) => candidate.issuer).join(" · ")}
+            </span>
+            <span className="supported-markets__status">
+              Verified · {asset.verifiedAt}
+            </span>
+          </article>
+        ))}
+      </div>
+      <p>
+        Browsing this registry does not request quotes. Select one market above
+        to compare its verified issuer routes.
+      </p>
+    </details>
   );
 }
 
@@ -453,21 +387,9 @@ export default function Home() {
   const [comparisonLoading, setComparisonLoading] = useState(false);
   const [comparisonError, setComparisonError] = useState<string | null>(null);
   const [amountError, setAmountError] = useState<string | null>(null);
-  const [showBoard, setShowBoard] = useState(false);
-  const [opportunities, setOpportunities] = useState<AssetOpportunity[]>([]);
-  const [scan, setScan] = useState<OpportunityScan | null>(null);
-  const [scanLoading, setScanLoading] = useState(false);
-  const [scanError, setScanError] = useState<string | null>(null);
-  const [sortMode, setSortMode] = useState<SortMode>("bps");
-  const [progress, setProgress] = useState<{
-    completed: number;
-    total: number;
-  }>({ completed: 0, total: SUPPORTED_ASSETS.length });
   const [clock, setClock] = useState(0);
   const comparisonSequence = useRef(0);
-  const scanSequence = useRef(0);
   const comparisonRequest = useRef<AbortController | null>(null);
-  const scanRequest = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const initial = window.setTimeout(() => setClock(Date.now()), 0);
@@ -480,10 +402,6 @@ export default function Home() {
   const selectedAsset = selectedTicker
     ? (assetForTicker(selectedTicker) ?? null)
     : null;
-  const sorted = useMemo(
-    () => sortOpportunities(opportunities, sortMode),
-    [opportunities, sortMode],
-  );
   const age = round
     ? Math.max(0, Math.floor((clock - Date.parse(round.createdAt)) / 1_000))
     : 0;
@@ -584,112 +502,6 @@ export default function Home() {
     }
   }
 
-  async function runScan() {
-    const parsed = parseBudgetInput(amount);
-    setAmountError(parsed.ok ? null : parsed.message);
-    if (!parsed.ok) return;
-    setShowBoard(true);
-    const sequence = ++scanSequence.current;
-    scanRequest.current?.abort();
-    const controller = new AbortController();
-    scanRequest.current = controller;
-    setScanLoading(true);
-    setScanError(null);
-    setScan(null);
-    setOpportunities([]);
-    setProgress({ completed: 0, total: SUPPORTED_ASSETS.length });
-    window.setTimeout(
-      () =>
-        document
-          .getElementById("market-scanner")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" }),
-      0,
-    );
-    try {
-      const response = await fetch("/api/opportunities", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ amount: parsed.amount }),
-        signal: controller.signal,
-      });
-      if (!response.ok) {
-        const payload = await response.json();
-        throw new Error(payload.message ?? "Opportunity scan failed");
-      }
-      if (!response.body) throw new Error("The scan stream was unavailable.");
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        buffer += decoder.decode(value, { stream: !done });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line) continue;
-          const update = JSON.parse(line) as StreamEvent;
-          if (sequence !== scanSequence.current) return;
-          if (update.type === "start")
-            setProgress({ completed: 0, total: update.total });
-          if (update.type === "asset") {
-            setProgress({ completed: update.completed, total: update.total });
-            setOpportunities((current) => [
-              ...current.filter(
-                (item) => item.ticker !== update.opportunity.ticker,
-              ),
-              update.opportunity,
-            ]);
-          }
-          if (update.type === "complete") {
-            setScan(update.scan);
-            setOpportunities(update.scan.opportunities);
-          }
-          if (update.type === "error") throw new Error(update.message);
-        }
-        if (done) break;
-      }
-      setClock(Date.now());
-    } catch (requestError) {
-      if (
-        sequence === scanSequence.current &&
-        !(
-          requestError instanceof DOMException &&
-          requestError.name === "AbortError"
-        )
-      )
-        setScanError(
-          requestError instanceof Error
-            ? requestError.message
-            : "Opportunity scan failed",
-        );
-    } finally {
-      if (sequence === scanSequence.current) {
-        setScanLoading(false);
-        scanRequest.current = null;
-      }
-    }
-  }
-
-  function openOpportunity(opportunity: AssetOpportunity) {
-    const asset = assetForTicker(opportunity.ticker);
-    if (!asset) return;
-    setSelectedTicker(asset.ticker);
-    setAssetQuery(assetSearchLabel(asset));
-    setAmount(formattedBudgetInput(opportunity.round?.requestedUsdc ?? amount));
-    setRound(opportunity.round);
-    setComparisonError(null);
-    setClock(Date.now());
-    window.setTimeout(
-      () =>
-        document
-          .getElementById(
-            opportunity.round ? "comparison-detail" : "comparison-form",
-          )
-          ?.scrollIntoView({ behavior: "smooth", block: "start" }),
-      0,
-    );
-  }
-
   const answerHeading = !round?.comparison
     ? "A complete pair is needed to name a better route"
     : round.comparison.label === "equal"
@@ -712,8 +524,8 @@ export default function Home() {
         <div className="intro">
           <h1>Find the better tokenized-stock route.</h1>
           <p className="intro__copy">
-            Choose a market and budget. StoxRoute compares both verified issuer
-            routes using current quotes.
+            Choose one stock or ETF. Compare every verified Solana issuer route
+            for that asset.
           </p>
         </div>
         <section
@@ -757,18 +569,8 @@ export default function Home() {
               ) : null;
             })}
           </div>
-          <button
-            className="scan-all-action"
-            type="button"
-            disabled={scanLoading}
-            onClick={() => void runScan()}
-          >
-            {scanLoading
-              ? `Scanning ${progress.completed} of ${progress.total}…`
-              : `Scan all ${SUPPORTED_ASSETS.length} supported markets`}
-            <span aria-hidden>↓</span>
-          </button>
         </section>
+        <SupportedMarkets />
         {comparisonError && (
           <div className="notice notice--error" role="alert">
             <div>
@@ -889,7 +691,7 @@ export default function Home() {
         )}
         <aside className="risk-note" aria-label="Tokenized asset limitations">
           <p className="eyebrow">Important context</p>
-          <strong>More tokens doesn't always mean more value.</strong>
+          <strong>More tokens don’t always mean more value.</strong>
           <p>
             StoxRoute compares estimated quote output, not ownership rights or
             guaranteed savings. Tokenized assets may differ in issuer rights,
@@ -898,107 +700,6 @@ export default function Home() {
             acquire a token.
           </p>
         </aside>
-        {showBoard && (
-          <section
-            className={`opportunity-board ${scanLoading ? "opportunity-board--loading" : ""}`}
-            id="market-scanner"
-            aria-live="polite"
-            aria-busy={scanLoading}
-          >
-            <div className="board-head">
-              <div>
-                <p className="eyebrow">Secondary market scanner</p>
-                <h2>
-                  {scan
-                    ? `${budget(scan.requestedUsdc)} across ${scan.total} verified assets`
-                    : "Opportunity Board"}
-                </h2>
-                <p>
-                  Rank complete issuer pairs across the registry. Partial and
-                  unavailable markets remain visible but unranked.
-                </p>
-              </div>
-              <div
-                className="board-controls"
-                aria-label="Sort opportunity board"
-              >
-                <button
-                  type="button"
-                  aria-pressed={sortMode === "bps"}
-                  onClick={() => setSortMode("bps")}
-                >
-                  Basis points
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={sortMode === "dollars"}
-                  onClick={() => setSortMode("dollars")}
-                >
-                  Dollar difference
-                </button>
-              </div>
-            </div>
-            {scanError && (
-              <div className="notice notice--error" role="alert">
-                <div>
-                  <strong>Scanner unavailable</strong>
-                  <span>{scanError}</span>
-                </div>
-                <button type="button" onClick={() => void runScan()}>
-                  Retry scan
-                </button>
-              </div>
-            )}
-            {scanLoading && (
-              <div className="scan-progress">
-                <span
-                  style={{
-                    width: `${(progress.completed / progress.total) * 100}%`,
-                  }}
-                />
-                <p>
-                  Scanning {progress.completed} of {progress.total} verified
-                  assets…
-                </p>
-              </div>
-            )}
-            {sorted.length ? (
-              <div className="opportunity-list">
-                {sorted.map((opportunity) => (
-                  <OpportunityRow
-                    key={opportunity.ticker}
-                    opportunity={opportunity}
-                    now={clock}
-                    selected={selectedTicker === opportunity.ticker}
-                    onSelect={openOpportunity}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="empty-state">
-                <div className="empty-state__axis">
-                  <span>NVDA</span>
-                  <i />
-                  <span>TSLA</span>
-                  <i />
-                  <span>SPY</span>
-                </div>
-                <p>
-                  {scanLoading
-                    ? "Reading coherent mint state and current Jupiter routes."
-                    : "Run the scan to compare all supported markets."}
-                </p>
-              </div>
-            )}
-            {scan && (
-              <p className="board-summary">
-                {scan.completeCount} complete · {scan.partialCount} partial ·{" "}
-                {scan.unavailableCount} unavailable. Only complete pairs are
-                ranked.
-              </p>
-            )}
-          </section>
-        )}
       </section>
       <footer>
         <span>Trading execution is not currently available.</span>

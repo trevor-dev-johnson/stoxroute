@@ -1,10 +1,10 @@
 # StoxRoute current status
 
-Last updated: **2026-09-23**, after the final judge-readiness audit and pre-submission corrections.
+Last updated: **2026-09-23**, after removing the bulk opportunity scan from the public release.
 
 ## Phase
 
-**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled and outside the public product flow. The public release presents a compact asset/budget question, an answer-first walletless comparison across nine independently verified xStocks/Ondo pairs, and the Opportunity Board as a secondary scan. The pre-submission correction preserves literal budget input so unsupported forms such as `1e3` are rejected instead of rewritten, raises mobile ticker targets to 44px, and aligns submission documentation with the current product.** Demo recording and hackathon form submission are not complete.
+**M0–M2 are complete. Unblocked M3 infrastructure remains server-disabled and outside the public product flow. The public release asks users to choose one verified asset and budget, then requests only that asset's two issuer routes. A quiet registry disclosure lists all nine verified xStocks/Ondo pairs without fetching quotes. The former bulk opportunity scan is retired and its endpoint fails closed with HTTP 410.** Demo recording and hackathon form submission are not complete.
 
 Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. Deadline: **Friday, September 25, 2026 at 4:00 PM Eastern**. Main track only.
 
@@ -19,7 +19,7 @@ Local user path: `C:\Users\Trevor\dev\stoxroute`. Product name: **StoxRoute**. D
 - [x] Backpack candidates set aside after three zero-supply observations.
 - [x] NVDA, TSLA, and SPY xStocks/Ondo mappings independently reverified from current issuer sources.
 - [x] All six current Solana mints verified as initialized, unpaused Token-2022 mints with matching metadata, expected 8/9 decimals, and Scaled UI state at confirmed slot `448126418`.
-- [x] Multi-asset streaming scan, progress, failure isolation, ranking, per-asset detail, durable public quote display, and a two-minute public routing warning implemented; the tighter review window remains execution-only.
+- [x] Selected-asset two-route comparison, honest partial/provider-error states, durable public quote display, and a two-minute public routing warning implemented; the tighter review window remains execution-only.
 - [x] AAPL, MSFT, META, AMZN, GOOGL, and QQQ added after official-source ISIN matching, exact mint validation, confirmed onchain decimals/multipliers, and positive live Jupiter quotes on both routes.
 - [x] Repeatable official-source registry verifier implemented; COIN, PLTR, NFLX, and GLD remain excluded because identity or live-route requirements did not fully pass in the verification window.
 
@@ -53,7 +53,7 @@ Record and upload the updated 60–90 second walletless comparison demo, verify 
 | Execution eligibility | Independent eligible tester not identified |
 | Transaction construction/simulation/signing/receipt | Infrastructure and fixture tests complete; no live taker order, wallet action, submission, or receipt verified |
 | Hackathon registration/submission | Not verified |
-| Supported registry/scanner behavior | Nine verified pairs are registered; runtime revalidates mint state and live quotes, while provider throttling or market-hour restrictions remain visible as unranked partial/unavailable rows rather than fixture fallbacks |
+| Supported registry/comparison behavior | Nine verified pairs are registered; the disclosure is metadata-only, while each comparison revalidates one pair's mint state and preserves provider throttling or market-hour restrictions as honest route failures rather than fixture fallbacks |
 
 ## Security review summary
 
@@ -200,3 +200,13 @@ Append a concise note and update phase/checklists/next task above:
 - Browser evidence: at desktop width, `1e3` remained unchanged, showed the visible validation error, rendered no pending/result state, and did not produce a quote request; a fresh AAPL `$1,000` comparison returned both live routes and an answer-first calculated verdict. At 390×844, the form and all six popular ticker controls fit without horizontal overflow, the controls used the 44px mobile minimum, and the browser warning/error log was empty.
 - Transaction truth: `/api/execution/status` remained `enabled:false` and a direct challenge attempt returned HTTP 403. No order or transaction was prepared, signed, submitted, or confirmed.
 - Exact next task: record and upload the prepared 60–90 second demo, verify the public links signed out, and submit the hackathon form before Friday, September 25, 2026 at 4:00 PM Eastern.
+
+### 2026-09-23 19:55 Eastern — selected-asset-only release working tree
+
+- Implemented: removed the bulk scan action, Opportunity Board, streaming client state, scanner domain module, and scanner tests; retired `/api/opportunities` with an HTTP 410 response that imports no quote/provider code; added a quiet metadata-only supported-market disclosure; and retained the searchable picker, popular shortcuts, precise two-route comparison, and honest per-route failure copy.
+- Checks run and actual results: `npm run typecheck` passed; `npm run lint` passed; `npm test` passed 58/58 across 15 files; `npm run build` passed with the existing route split; and `node --check scripts/browser-smoke.mjs` passed.
+- Browser evidence: production-build checks passed at 1440×1000 and 390×844 with one client `/api/quotes` request for the selected AAPL comparison, zero `/api/opportunities` requests, nine registry rows rendered without quote traffic, no horizontal overflow, 44px mobile ticker targets, no public transaction controls, and no browser console errors. Fresh scanner-free desktop and mobile screenshots replaced the prior captures.
+- API and transaction truth: a direct bulk request returned HTTP 410; `/api/execution/status` remained `enabled:false` and `configured:false`. No order or transaction was prepared, signed, submitted, or confirmed.
+- Decisions changed: D022 retires D018's scanner direction and the scanner portions of D019/D021 while preserving the verified registry and selected-pair comparison contract.
+- Blocked/unverified at this timestamp: commit, push, Vercel production deployment, recorded demo, and hackathon submission confirmation.
+- Exact next task: commit and deploy this verified selected-asset release, then record/upload the prepared demo and submit before Friday, September 25, 2026 at 4:00 PM Eastern.

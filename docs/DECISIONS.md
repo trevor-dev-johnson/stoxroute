@@ -205,3 +205,10 @@ This is an append-only record of decisions that would otherwise get relitigated 
 **Consequence:** Popular tickers are compact shortcuts rather than promotional cards, the nine-market scanner is a secondary action, cards round exposure to five decimals while details retain full precision, and public display age no longer changes a valid historical result into a failure. The existing 30-second execution intent boundary, quote calculations, registry, backend validation, and server-disabled execution gate are unchanged.
 
 **Clarifies:** D016, D019, and D020. It supersedes D018 only for public display-freshness treatment.
+## 2026-09-23 — D022: Retire bulk opportunity scanning from the public product
+
+**Decision:** Make selected-asset comparison the only live quote-fetching path. Remove the bulk action and Opportunity Board, replace them with a read-only disclosure of registry metadata, and make the former `/api/opportunities` endpoint return HTTP 410 without invoking Solana or Jupiter.
+
+**Why:** A nine-asset pass produced eighteen Jupiter requests, exhausted shared provider limits, and made healthy selected-asset comparisons look unreliable. The core user question is about one chosen stock or ETF, not market-wide discovery.
+
+**Consequence:** One Compare action requests exactly the selected asset's two issuer routes. Search, popular shortcuts, registry verification, precise normalization, honest partial/rate-limit/provider errors, and the hidden server-disabled execution infrastructure remain intact. D018's scanner direction and the scanner portions of D019/D021 are superseded.

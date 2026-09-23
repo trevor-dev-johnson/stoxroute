@@ -1,6 +1,6 @@
 # Architecture and comparison contract
 
-Updated: 2026-09-19. This document describes the implemented asset-first walletless comparison, secondary scanner contract, and separately gated execution boundary.
+Updated: 2026-09-23. This document describes the implemented selected-asset walletless comparison, read-only registry disclosure, and separately gated execution boundary.
 
 ## Stack
 
@@ -24,8 +24,8 @@ Keep any compatible existing versions. On a new app, choose a mutually supported
 
 | Suggested path | Responsibility |
 |---|---|
-| `src/app/page.tsx` | Asset search/selection, one-market comparison, and secondary Opportunity Board |
-| `src/app/api/opportunities/route.ts` | Stream bounded scan progress and isolated asset results |
+| `src/app/page.tsx` | Asset search/selection, one-market comparison, and read-only supported-market registry |
+| `src/app/api/opportunities/route.ts` | Retired bulk endpoint; returns HTTP 410 without requesting provider data |
 | `src/app/api/quotes/route.ts` | Validate supported ticker/input and return normalized quote round |
 | `src/app/api/order/route.ts` | Gated, fresh transaction preparation |
 | `src/app/api/execute/route.ts` | Validate signed intent and forward to execution provider |
@@ -35,7 +35,6 @@ Keep any compatible existing versions. On a new app, choose a mutually supported
 | `src/lib/providers/jupiter.ts` | HTTP calls, runtime schemas, provider errors, timestamps |
 | `src/lib/routing/normalize.ts` | Base units → token units → share-equivalent exposure |
 | `src/lib/routing/compare.ts` | Comparable-round checks and deterministic ranking |
-| `src/lib/routing/opportunities.ts` | Concurrency control, failure isolation, dollar calculation, and board sorting |
 | `src/lib/ui/asset-search.ts` | Registry-bounded ticker and company-name search |
 | `src/lib/routing/fees.ts` | Quoted cost interpretation and explicit unknowns |
 | `src/lib/execution/` | Gating, transaction intent binding, signing payload, confirmation |
@@ -86,7 +85,7 @@ Mint state can be cached for at most 60 seconds, never across a known multiplier
 
 Implemented policy: 8-second HTTP timeout, at most one bounded retry honoring `Retry-After` up to two seconds, 2-second maximum spread between response completion times, and a 30-second display window. A throttle refreshes the entire pair so a new quote is never compared with a stale sibling.
 
-The opportunity scan is bounded to the supported registry and processes one asset at a time; its two issuer quotes run concurrently. The NDJSON response emits a start event, one event per completed asset, and a final scan summary. One asset failure never aborts the others. Complete pairs sort by exact basis-point advantage by default or exact quote-implied dollar advantage on request; partial/unavailable rows stay visible but sort below complete comparisons.
+The public UI requests only the selected asset. Its two issuer quotes run concurrently as one coherent comparison round. Provider errors remain attached to the affected route, and a partial pair never receives a cross-issuer winner. The supported-market disclosure renders registry metadata only and does not request Solana or Jupiter data. The retired bulk endpoint returns HTTP 410 without invoking a provider.
 
 Disable the Compare button while a round runs, debounce editing, and discard late results for an obsolete input/request ID. Use manual refresh initially. Deduplicate identical in-flight requests as an optimization; do not rely on process memory for correctness across serverless instances. Never continuously poll six quotes for the three presets.
 

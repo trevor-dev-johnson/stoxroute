@@ -7,11 +7,15 @@ describe("public product scope", () => {
   it("keeps wallet and execution infrastructure out of the public comparison page", () => {
     expect(pageSource).not.toMatch(/WalletControl|ExecutionPanel|Connect wallet|Tester required|Execution unavailable|Supervised execution/i);
     expect(pageSource).toContain("Find the better tokenized-stock route.");
+    expect(pageSource).toContain("Choose one stock or ETF. Compare every verified Solana issuer route");
     expect(pageSource).toContain("Search NVIDIA, Apple, Tesla, ETF…");
+    expect(pageSource).toContain("Browse supported markets");
     expect(pageSource).toContain("View details");
+    expect(pageSource).toContain("candidate.failure.message");
+    expect(pageSource).not.toMatch(/\/api\/opportunities|runScan|Scan all|Opportunity Board|market-scanner/);
     expect(pageSource).not.toMatch(/Featured markets|refresh required|Stale comparison|displayExpiresAt/i);
     expect(pageSource).toContain("PUBLIC_QUOTE_WARNING_MS = 120_000");
-    expect(pageSource).toContain("may no longer reflect current routing");
+    expect(pageSource).toMatch(/may no longer reflect\s+current routing/);
     expect(pageSource).toContain("Trading execution is not currently available.");
   });
 });

@@ -66,9 +66,11 @@ if (await evaluate("Boolean(document.querySelector('.compare-button')?.disabled)
 }
 await evaluate(`(() => {
   window.__stoxrouteQuoteRequestCount = 0;
+  window.__stoxrouteBulkRequestCount = 0;
   const originalFetch = window.fetch.bind(window);
   window.fetch = (...args) => {
     if (String(args[0]).includes('/api/quotes')) window.__stoxrouteQuoteRequestCount += 1;
+    if (String(args[0]).includes('/api/opportunities')) window.__stoxrouteBulkRequestCount += 1;
     return originalFetch(...args);
   };
   const input = document.querySelector('#amount');
@@ -107,6 +109,20 @@ if (!await evaluate("[...document.querySelectorAll('summary')].some((summary) =>
 if (!await evaluate("Boolean(document.querySelector('.answer-panel h2')) && document.querySelector('.answer-panel').offsetTop < document.querySelector('.routes').offsetTop")) {
   throw new Error("The answer does not lead the route details");
 }
+if (await evaluate("Boolean(document.querySelector('.scan-all-action, #market-scanner')) || document.body.innerText.includes('Scan all')")) {
+  throw new Error("The retired bulk scan is still visible");
+}
+if (await evaluate("window.__stoxrouteQuoteRequestCount !== 1 || window.__stoxrouteBulkRequestCount !== 0")) {
+  throw new Error("Normal comparison did not stay within the selected-asset quote path");
+}
+await evaluate("document.querySelector('.supported-markets summary')?.click()");
+if (await evaluate("document.querySelectorAll('.supported-markets__list article').length !== 9")) {
+  throw new Error("The supported-market registry did not render all verified assets");
+}
+if (await evaluate("window.__stoxrouteBulkRequestCount !== 0")) {
+  throw new Error("Browsing the supported-market registry triggered a bulk request");
+}
+await evaluate("document.querySelector('.supported-markets[open] summary')?.click()");
 if (screenshotPath) {
   await wait(350);
   await evaluate("document.querySelector('.answer-panel')?.scrollIntoView({ block: 'start' })");
@@ -114,25 +130,11 @@ if (screenshotPath) {
   const screenshot = await call("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
   await writeFile(screenshotPath, Buffer.from(screenshot.data, "base64"));
 }
-await evaluate("document.querySelector('.scan-all-action')?.click()");
-for (let attempt = 0; attempt < 240; attempt += 1) {
-  if (await evaluate("Boolean(document.querySelector('.board-summary'))")) break;
-  await wait(500);
-}
-if (!await evaluate("Boolean(document.querySelector('.board-summary'))")) throw new Error("The optional opportunity scan did not complete");
-const opportunityRowCount = await evaluate("document.querySelectorAll('.opportunity-row').length");
-if (opportunityRowCount !== 9) throw new Error(`Expected 9 opportunity rows, found ${opportunityRowCount}`);
-
 const report = await evaluate(`JSON.stringify({
   viewport: { width: innerWidth, height: innerHeight },
   document: { clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth },
   horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
   heading: document.querySelector('h1')?.innerText,
-  selectedMarket: document.querySelector('.asset-line strong')?.innerText,
-  comparisonHeading: document.querySelector('.results__head h2')?.innerText,
-  boardHeading: document.querySelector('.board-head h2')?.innerText,
-  rows: [...document.querySelectorAll('.opportunity-row')].map((row) => row.innerText.replace(/\\n+/g, ' · ')),
-  boardSummary: document.querySelector('.board-summary')?.innerText,
   restrictionsVisible: Boolean(document.querySelector('.risk-note')),
   answer: document.querySelector('.answer-panel h2')?.innerText,
   difference: document.querySelector('.answer-panel__difference')?.innerText,
@@ -142,6 +144,9 @@ const report = await evaluate(`JSON.stringify({
   amountHeight: document.querySelector('.amount-field')?.getBoundingClientRect().height,
   scanButtonHeight: document.querySelector('.compare-button')?.getBoundingClientRect().height,
   minimumTickerChipHeight: Math.min(...[...document.querySelectorAll('.popular-tickers button')].map((button) => button.getBoundingClientRect().height)),
+  registryRows: document.querySelectorAll('.supported-markets__list article').length,
+  selectedAssetRequests: window.__stoxrouteQuoteRequestCount,
+  bulkRequests: window.__stoxrouteBulkRequestCount,
   consoleErrors: ${JSON.stringify(consoleErrors)},
 })`);
 console.log(report);
